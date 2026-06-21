@@ -3,7 +3,8 @@ type StoreRow = { store_id: string; name: string; address: string };
 export async function getMasterStoresSample(
   limit: number
 ): Promise<StoreRow[]> {
-  const url = `${process.env.MASTER_DB_URL}/rest/v1/stores?select=store_id,name,address&limit=${limit}`;
+  // master DB의 실제 컬럼명은 store_name — PostgREST 별칭으로 name 으로 노출
+  const url = `${process.env.MASTER_DB_URL}/rest/v1/stores?select=store_id,name:store_name,address&limit=${limit}`;
   const key = process.env.MASTER_DB_ANON_KEY!;
 
   const res = await fetch(url, {
