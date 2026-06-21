@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dangol (리붐단골)
 
-## Getting Started
+리붐 생태계의 단골 고객 관리 제품.
 
-First, run the development server:
+## 프로젝트 구조
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+dangol/
+├── app/
+│   ├── layout.tsx          # 공통 레이아웃
+│   ├── page.tsx            # 점주 존 (/)
+│   ├── r/[code]/page.tsx   # 고객 QR 존 (/r/:code)
+│   ├── admin/page.tsx      # 관리자 존 (/admin)
+│   └── api/health/route.ts # 헬스체크 (/api/health)
+├── lib/
+│   ├── masterDb.ts         # 마스터 DB REST 클라이언트 (읽기 전용)
+│   └── dangolDb.ts         # dangol DB Supabase 클라이언트
+├── supabase/
+│   ├── migrations/         # DDL/RLS 마이그레이션
+│   └── seed/               # 초기 시드
+├── tests/                  # vitest 테스트
+├── docs/                   # 기획·PRD 문서
+├── sentry.client.config.ts # Sentry 클라이언트
+├── sentry.server.config.ts # Sentry 서버
+└── .env.example            # 환경변수 목록 (값 없음)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 로컬 실행
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 의존성 설치
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 환경변수 설정 (.env.example 참고)
+cp .env.example .env.local
+# .env.local에 실제 값 입력
 
-## Learn More
+# 개발 서버
+npm run dev
 
-To learn more about Next.js, take a look at the following resources:
+# 테스트
+npm test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 환경변수
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`.env.example` 참고. 실제 값은 Vercel 대시보드 또는 로컬 `.env.local`에만 보관.
 
-## Deploy on Vercel
+## DB
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **마스터 DB** (`itdalab-infra`): 점포 fact 읽기 전용 REST 접근
+- **dangol DB**: 단골 운영 데이터. 마이그레이션은 `supabase/migrations/` 관리
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 배포
+
+- **플랫폼**: Vercel (프리뷰) → `main` 머지 후 prod (CEO 승인 필요)
+- **헬스체크**: `GET /api/health` → 200 `{"status":"ok"}`
