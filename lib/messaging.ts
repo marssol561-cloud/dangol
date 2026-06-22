@@ -3,7 +3,7 @@ import { getServerClient } from "./dangolDb";
 import { decryptPII } from "./crypto";
 import { sendOne, type SolapiChannel } from "./solapi";
 import { resolveSegment, type SegmentType } from "./segments";
-import { filterByConsent, dailyCapOk, isDuplicate } from "./sendGuard";
+import { filterByConsent, filterNonDeleted, dailyCapOk, isDuplicate } from "./sendGuard";
 import { getTemplate, type TemplateId } from "./templates";
 
 const FALLBACK_ORDER: SolapiChannel[] = ["alimtalk", "email", "sms"];
@@ -57,7 +57,9 @@ export async function sendToSegment(
 
   const apiKey = decryptPII(channelRow.api_key_enc);
 
-  const customers = await resolveSegment({ storeLinkId, type: segment });
+  const rawCustomers = await resolveSegment({ storeLinkId, type: segment });
+  // Exclude anonymized (deleted_at IS NOT NULL) customers — double-guard in addition to segment filter
+  const customers = await filterNonDeleted(rawCustomers);
   if (customers.length === 0) return { sent: 0, failed: 0, skipped: 0 };
 
   const capOk = await dailyCapOk(storeLinkId);
@@ -73,6 +75,11 @@ export async function sendToSegment(
     let msgId = "";
     let sendOk = false;
 
+    const unsubLink = customer.unsub_token
+      ? `\n\n수신거부: ${process.env.NEXT_PUBLIC_APP_URL ?? ""}/unsubscribe?t=${customer.unsub_token}`
+      : "";
+    const content = template.body({ ...templateVars, customerName: customer.name ?? "" }) + unsubLink;
+
     for (const channel of FALLBACK_ORDER) {
       if (channel === "alimtalk" && !channelRow.kakao_channel_id) continue;
 
@@ -83,7 +90,6 @@ export async function sendToSegment(
       const to = resolveContactForChannel(customer, channel);
       if (!to) continue;
 
-      const content = template.body({ ...templateVars, customerName: customer.name ?? "" });
       const result = await sendOne({
         channel,
         to,
@@ -109,7 +115,7 @@ export async function sendToSegment(
       customer_id: customer.id,
       channel: channelUsed ?? "sms",
       template_id: templateId,
-      content: template.body({ ...templateVars, customerName: customer.name ?? "" }),
+      content,
       status: sendOk ? "sent" : "failed",
       provider_msg_id: msgId || null,
       sent_at: sendOk ? new Date().toISOString() : null,
