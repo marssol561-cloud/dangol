@@ -4,6 +4,7 @@ import { getServerClient } from "@/lib/dangolDb";
 import { hashPII, encryptPII } from "@/lib/crypto";
 import { issueFirstCoupon, issueReferralCoupon } from "@/lib/coupons";
 import { sendCoupon } from "@/lib/messaging";
+import { linkUnifiedIfConsented } from "@/lib/unified";
 
 type Channel = "phone" | "kakao" | "email";
 
@@ -103,6 +104,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "고객 등록 실패" }, { status: 500 });
     }
     customerId = (newCustomer as { id: string }).id;
+
+    // Link to unified_customers if thirdparty consent given (new customer only)
+    if (consents.thirdparty) {
+      await linkUnifiedIfConsented(customerId, hash, storeLinkId, consents).catch(() => {
+        // Non-fatal: unified link failure must not block customer registration
+      });
+    }
   }
 
   // 4. INSERT consents (required always; optional only if true)
