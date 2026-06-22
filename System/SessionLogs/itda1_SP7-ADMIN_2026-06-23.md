@@ -63,6 +63,15 @@ PR: https://github.com/marssol561-cloud/dangol/pull/7
 - [x] app/api/unsubscribe / consent-versions / cron/purge
 - [x] vercel.json — purge cron 02:00 UTC
 
+## SP-8 Merge 완료 (2026-06-23) ✅ 8-STEP PLAN COMPLETE
+
+- Preview: READY (`dpl_7R3bNNPoGuHLt4e1MYFBRQEvntAV`)
+- Suspense 빌드 오류 수정: app/unsubscribe/page.tsx → UnsubscribeContent 분리 + Suspense 래핑
+- 머지 커밋: `e41c578` (PR #8 → main)
+- feat/sp8-safety-legal 원격 브랜치 삭제 완료
+- 프로덕션: READY (`dpl_HzwXRmZfCEwzG7CSBN6ogRW6fr8v`)
+- /api/health: 200 `{"status":"ok"}`
+
 후속 필요:
 - Lawyer 검토 후 consent_versions DRAFT 문구 제거
 - Vercel NEXT_PUBLIC_APP_URL 설정 (unsubscribe 링크 완전 동작)
