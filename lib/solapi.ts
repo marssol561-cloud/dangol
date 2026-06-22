@@ -47,7 +47,7 @@ export async function sendOne(params: SendOneParams): Promise<SendOneResult> {
 
   if (channel === "alimtalk" && channelCreds.kakaoChannelId && templateId) {
     body.message = {
-      ...body.message,
+      ...(body.message as Record<string, unknown>),
       type: "ATA",
       kakaoOptions: {
         pfId: channelCreds.kakaoChannelId,
