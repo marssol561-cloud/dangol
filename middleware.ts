@@ -4,10 +4,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require any authenticated user
-const PROTECTED = ['/', '/onboarding', '/stamps', '/coupon-use'];
+const PROTECTED = ['/', '/onboarding', '/stamps', '/coupon-use', '/messages', '/send-setup', '/automation'];
 
 // Routes that staff role cannot access (owner-only)
-const OWNER_ONLY = ['/', '/onboarding', '/stamps'];
+const OWNER_ONLY = ['/', '/onboarding', '/stamps', '/messages', '/send-setup', '/automation'];
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
