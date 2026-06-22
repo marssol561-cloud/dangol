@@ -29,6 +29,14 @@ PR: https://github.com/marssol561-cloud/dangol/pull/7
 - [x] schema_version = 008
 - [x] PR #7 오픈
 
+## SP-7 Merge 완료 (2026-06-23)
+
+- Preview: READY (`dpl_63CiVuFJc2AMnCE4bDbPbYw9AZs4`)
+- 머지 커밋: `55d3035` (PR #7 → main)
+- feat/sp7-admin 원격 브랜치 삭제 완료
+- 프로덕션: READY (`dpl_7JmZ9b4nNxgddsncEp4XZ1ree633`)
+- /api/health: 200 `{"status":"ok"}`
+
 ## 미완료 / 후속 필요
 
 - CEO admin seed: itdalabbot@gmail.com이 dangol auth.users 미존재 → CEO가 앱 가입 후 아래 SQL 1회 실행
@@ -37,8 +45,25 @@ PR: https://github.com/marssol561-cloud/dangol/pull/7
   SELECT id, 'CEO' FROM auth.users WHERE email = 'itdalabbot@gmail.com'
   ON CONFLICT (id) DO NOTHING;
   ```
-- Vercel preview 빌드 결과 대기 (PR #7)
 
-## 다음 세션 첫 액션
+## SP-8 완료 (2026-06-23)
 
-Vercel preview Ready 확인 → CEO 검수 게이트 → 머지 (CEO 승인 필수).
+- 브랜치: feat/sp8-safety-legal / 커밋: b447b22
+- PR: https://github.com/marssol561-cloud/dangol/pull/8
+- 테스트: 6파일 30/30 통과 | tsc: 0건 | security advisor: 0
+
+완료 목록:
+- [x] 009 migration (deleted_at, unsub_token, consent_versions, consents.version)
+- [x] lib/purge.ts — anonymizeCustomer + scanPurgeTargets
+- [x] lib/unsubscribe.ts — resolveByToken + optOut + withdrawConsent
+- [x] lib/sendGuard.ts — filterNonDeleted
+- [x] lib/segments.ts — unsub_token + deleted_at 필터
+- [x] lib/messaging.ts — unsub 링크 + filterNonDeleted
+- [x] app/unsubscribe/page.tsx (B4)
+- [x] app/api/unsubscribe / consent-versions / cron/purge
+- [x] vercel.json — purge cron 02:00 UTC
+
+후속 필요:
+- Lawyer 검토 후 consent_versions DRAFT 문구 제거
+- Vercel NEXT_PUBLIC_APP_URL 설정 (unsubscribe 링크 완전 동작)
+- CEO admin seed SQL (itdalabbot@gmail.com 가입 후)
