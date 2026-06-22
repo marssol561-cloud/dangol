@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getServerClient } from "../lib/dangolDb";
 
 describe("test_dangol_db_connection", () => {
-  it("service client reads schema_version=003 from app_meta", async () => {
+  it("service client reads schema_version=004 from app_meta", async () => {
     const client = getServerClient();
     const { data, error } = await client
       .from("app_meta")
@@ -11,6 +11,6 @@ describe("test_dangol_db_connection", () => {
       .single();
 
     expect(error).toBeNull();
-    expect(data?.value).toBe("003");
+    expect(data?.value).toBe("004");
   });
 });
