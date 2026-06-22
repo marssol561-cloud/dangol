@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getServerClient } from "@/lib/dangolDb";
 import { hashPII, encryptPII } from "@/lib/crypto";
-import { issueFirstCoupon } from "@/lib/coupons";
+import { issueFirstCoupon, issueReferralCoupon } from "@/lib/coupons";
 import { sendCoupon } from "@/lib/messaging";
 
 type Channel = "phone" | "kakao" | "email";
@@ -22,6 +22,7 @@ interface CustomerPayload {
     ad_email: boolean;
   };
   browser_token?: string;
+  ref?: string;  // referrer browser_token
 }
 
 export async function POST(req: NextRequest) {
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
 
-  const { store_code, channel, identifier, name, visit_purpose, companion, consents, browser_token: clientToken } = body;
+  const { store_code, channel, identifier, name, visit_purpose, companion, consents, browser_token: clientToken, ref: refToken } = body;
 
   if (!store_code || !channel || !identifier || !visit_purpose) {
     return NextResponse.json({ error: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -138,7 +139,31 @@ export async function POST(req: NextRequest) {
   // 6. Stub send
   await sendCoupon(coupon.id);
 
-  // 7. Set browser_token cookie
+  // 7. Handle referral if ref token present (new customer only)
+  if (refToken && !existing) {
+    const { data: referrerCustomer } = await db
+      .from("customers")
+      .select("id")
+      .eq("store_link_id", storeLinkId)
+      .eq("browser_token", refToken)
+      .maybeSingle();
+
+    if (referrerCustomer) {
+      const referrerId = (referrerCustomer as { id: string }).id;
+      await db.from("referrals").insert({
+        store_link_id: storeLinkId,
+        referrer_id: referrerId,
+        invitee_id: customerId,
+        status: "completed",
+        reward_given: true,
+      });
+      // Issue C coupon to both referrer and invitee
+      await issueReferralCoupon(referrerId, storeLinkId);
+      await issueReferralCoupon(customerId, storeLinkId);
+    }
+  }
+
+  // 8. Set browser_token cookie
   const cookieStore = await cookies();
   cookieStore.set("dangol_bt", browserToken, {
     httpOnly: true,
