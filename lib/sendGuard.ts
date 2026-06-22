@@ -1,4 +1,4 @@
-// Server-only — consent filter, night block, daily cap + dedupe.
+// Server-only — consent filter, night block, daily cap + dedupe + deleted_at guard.
 import { getServerClient } from "./dangolDb";
 
 export type ConsentChannel = "sms" | "kakao" | "email";
@@ -63,6 +63,22 @@ export async function dailyCapOk(storeLinkId: string): Promise<boolean> {
 
   if (error) throw error;
   return (count ?? 0) < DAILY_CAP;
+}
+
+// Exclude anonymized customers (deleted_at IS NOT NULL) from sends.
+export async function filterNonDeleted<T extends { id: string }>(
+  customers: T[]
+): Promise<T[]> {
+  if (customers.length === 0) return [];
+  const db = getServerClient();
+  const ids = customers.map((c) => c.id);
+  const { data } = await db
+    .from("customers")
+    .select("id")
+    .in("id", ids)
+    .is("deleted_at", null);
+  const alive = new Set((data ?? []).map((r: { id: string }) => r.id));
+  return customers.filter((c) => alive.has(c.id));
 }
 
 // Deduplication: skip if same customer received same template within `windowMs`.

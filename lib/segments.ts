@@ -11,6 +11,7 @@ export interface SegmentCustomer {
   grade: string;
   last_visit_at: string | null;
   name: string | null;
+  unsub_token: string | null;
 }
 
 export interface ResolveSegmentOptions {
@@ -32,12 +33,13 @@ export async function resolveSegment(
   if (type === "grade") {
     const query = db
       .from("customers")
-      .select("id, phone_enc, email_enc, kakao_enc, grade, last_visit_at, name")
+      .select("id, phone_enc, email_enc, kakao_enc, grade, last_visit_at, name, unsub_token")
       .eq("store_link_id", storeLinkId);
 
+    const baseQuery = query.is("deleted_at", null);
     const { data, error } = grade
-      ? await query.eq("grade", grade)
-      : await query;
+      ? await baseQuery.eq("grade", grade)
+      : await baseQuery;
 
     if (error) throw error;
     return (data ?? []) as SegmentCustomer[];
@@ -47,9 +49,10 @@ export async function resolveSegment(
     const cutoff = new Date(Date.now() - churnDays * 24 * 60 * 60 * 1000).toISOString();
     const { data, error } = await db
       .from("customers")
-      .select("id, phone_enc, email_enc, kakao_enc, grade, last_visit_at, name")
+      .select("id, phone_enc, email_enc, kakao_enc, grade, last_visit_at, name, unsub_token")
       .eq("store_link_id", storeLinkId)
-      .lt("last_visit_at", cutoff);
+      .lt("last_visit_at", cutoff)
+      .is("deleted_at", null);
 
     if (error) throw error;
     return (data ?? []) as SegmentCustomer[];

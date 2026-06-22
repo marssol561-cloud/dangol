@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
       companion: companion ?? null,
       name: name ?? null,
       browser_token: browserToken,
+      unsub_token: generateBrowserToken(), // unique opt-out token per customer
       grade: "normal",
       visit_count: 0,
     };
