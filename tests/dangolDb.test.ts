@@ -11,6 +11,6 @@ describe("test_dangol_db_connection", () => {
       .single();
 
     expect(error).toBeNull();
-    expect(data?.value).toBe("006");
+    expect(data?.value).toBe("007");
   });
 });
