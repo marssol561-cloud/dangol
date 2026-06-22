@@ -12,23 +12,19 @@ export function generateCouponCode(): string {
 
 function randomBytes(n: number): Uint8Array {
   const buf = new Uint8Array(n);
-  // Node.js crypto globalThis.crypto available in Next.js runtime
   (globalThis.crypto ?? require("crypto").webcrypto).getRandomValues(buf);
   return buf;
 }
 
-export async function issueFirstCoupon(
+async function insertCoupon(
   customerId: string,
-  storeLinkId: string
+  storeLinkId: string,
+  kind: "A" | "B" | "C",
+  benefit: string
 ): Promise<{ id: string; code: string; benefit: string; expires_at: string }> {
   const db = getServerClient();
-
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-  const benefit = "첫 방문 환영 쿠폰";
 
-  let coupon: { id: string; code: string; benefit: string; expires_at: string } | null = null;
-
-  // Retry up to 10 times on code collision
   for (let i = 0; i < 10; i++) {
     const code = generateCouponCode();
     const { data, error } = await db
@@ -36,7 +32,7 @@ export async function issueFirstCoupon(
       .insert({
         store_link_id: storeLinkId,
         customer_id: customerId,
-        kind: "A",
+        kind,
         code,
         benefit,
         status: "issued",
@@ -45,14 +41,60 @@ export async function issueFirstCoupon(
       .select("id, code, benefit, expires_at")
       .single();
 
-    if (!error && data) {
-      coupon = data as { id: string; code: string; benefit: string; expires_at: string };
-      break;
-    }
-    // If not a unique violation, rethrow
+    if (!error && data) return data as { id: string; code: string; benefit: string; expires_at: string };
     if (error && !error.message.includes("unique")) throw error;
   }
+  throw new Error("쿠폰 코드 생성 실패: 10회 재시도 초과");
+}
 
-  if (!coupon) throw new Error("쿠폰 코드 생성 실패: 10회 재시도 초과");
-  return coupon;
+export async function issueFirstCoupon(
+  customerId: string,
+  storeLinkId: string
+): Promise<{ id: string; code: string; benefit: string; expires_at: string }> {
+  return insertCoupon(customerId, storeLinkId, "A", "첫 방문 환영 쿠폰");
+}
+
+export async function issueReturningCoupon(
+  customerId: string,
+  storeLinkId: string
+): Promise<{ id: string; code: string; benefit: string; expires_at: string } | null> {
+  const db = getServerClient();
+
+  // Skip if unused B coupon already exists
+  const { data: existing } = await db
+    .from("coupons")
+    .select("id")
+    .eq("customer_id", customerId)
+    .eq("store_link_id", storeLinkId)
+    .eq("kind", "B")
+    .eq("status", "issued")
+    .maybeSingle();
+
+  if (existing) return null;
+
+  // Get benefit text from stamps_rewards
+  const { data: policy } = await db
+    .from("stamps_rewards")
+    .select("service_b")
+    .eq("store_link_id", storeLinkId)
+    .maybeSingle();
+
+  const benefit = (policy as { service_b?: string } | null)?.service_b ?? "재방문 감사 쿠폰";
+  return insertCoupon(customerId, storeLinkId, "B", benefit);
+}
+
+export async function issueReferralCoupon(
+  customerId: string,
+  storeLinkId: string
+): Promise<{ id: string; code: string; benefit: string; expires_at: string }> {
+  const db = getServerClient();
+
+  const { data: policy } = await db
+    .from("stamps_rewards")
+    .select("service_c")
+    .eq("store_link_id", storeLinkId)
+    .maybeSingle();
+
+  const benefit = (policy as { service_c?: string } | null)?.service_c ?? "친구 추천 쿠폰";
+  return insertCoupon(customerId, storeLinkId, "C", benefit);
 }

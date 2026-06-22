@@ -1,9 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Routes that require authentication (exact or prefix)
-const PROTECTED = ['/', '/onboarding'];
+// Routes that require any authenticated user
+const PROTECTED = ['/', '/onboarding', '/stamps', '/coupon-use'];
+
+// Routes that staff role cannot access (owner-only)
+const OWNER_ONLY = ['/', '/onboarding', '/stamps'];
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -44,6 +48,25 @@ export async function middleware(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Staff role: can only access /coupon-use among owner routes
+  if (user && OWNER_ONLY.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    const db = createClient(
+      process.env.DANGOL_DB_URL!,
+      process.env.DANGOL_DB_SERVICE_ROLE_KEY!
+    );
+    const { data: ownerRow } = await db
+      .from('owners')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (ownerRow && (ownerRow as { role: string }).role === 'staff') {
+      const redirect = request.nextUrl.clone();
+      redirect.pathname = '/coupon-use';
+      return NextResponse.redirect(redirect);
+    }
   }
 
   return supabaseResponse;
