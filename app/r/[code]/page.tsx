@@ -186,62 +186,58 @@ export default function CustomerPage() {
     const referLink = `${typeof window !== "undefined" ? window.location.origin : ""}/r/${storeCode}?ref=${encodeURIComponent(document.cookie.replace(/.*dangol_bt=([^;]+).*/, "$1"))}`;
 
     return (
-      <main className="min-h-screen bg-[#f8f7f4] flex flex-col">
-        <header className="bg-[#0f6e56] px-5 py-5">
-          <p className="font-bold text-base text-white">{storeName}</p>
-          <p className="text-xs text-[#e1f5ee] mt-0.5">단골 스탬프 카드</p>
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>단골 스탬프 카드 · {visitCount}번째 방문</p>
         </header>
 
-        <div className="flex-1 p-5 flex flex-col gap-4">
+        <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {checkInResult?.accrued ? (
-            <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-xl px-4 py-3">
-              <p className="text-sm font-semibold text-[#085041]">🎉 {visitCount}번째 방문입니다!</p>
+            <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: '12px 16px' }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>🎉 {visitCount}번째 방문입니다!</p>
             </div>
           ) : (
-            <p className="text-sm text-[#888780]">오늘은 이미 방문 도장을 받으셨어요.</p>
+            <p style={{ fontSize: 14, color: '#888780' }}>오늘은 이미 방문 도장을 받으셨어요.</p>
           )}
 
           {/* Stamp board */}
-          <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:20 }}>
-            <p className="text-sm font-semibold text-[#2c2c2a] mb-3">스탬프 현황</p>
-            <div className="flex flex-wrap gap-2 mb-3">
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 20 }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#633806', marginBottom: 12 }}>스탬프 현황</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               {Array.from({ length: required }).map((_, i) => (
                 <div
                   key={i}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-lg border-2 ${
-                    i < visitCount % required
-                      ? "border-[#0f6e56] text-[#0f6e56] bg-[#e1f5ee]"
-                      : "border-[#e5e5e0] text-[#e5e5e0]"
-                  }`}
+                  style={{ width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, background: i < visitCount % required ? '#0f6e56' : '#fff', border: `1px solid ${i < visitCount % required ? '#0f6e56' : '#e5e5e0'}`, color: i < visitCount % required ? '#fff' : '#888780' }}
                 >
                   {i < visitCount % required ? "★" : "☆"}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-[#888780]">
+            <p style={{ fontSize: 12, color: '#888780' }}>
               {visitCount}번 방문 · {required - (visitCount % required)}번 더 오시면 리워드!
             </p>
           </div>
 
           {/* New coupon */}
           {newCoupon && (
-            <div className="bg-[#e1f5ee] border-2 border-dashed border-[#0f6e56] rounded-xl p-5 text-center flex flex-col gap-2">
-              <p className="text-sm font-semibold text-[#085041]">재방문 쿠폰이 발급되었습니다!</p>
-              <p className="text-[28px] font-black tracking-widest text-[#0f6e56]">{newCoupon.code}</p>
-              <p className="text-sm text-[#085041]">{newCoupon.benefit}</p>
-              <p className="text-xs text-[#888780]">사장님께 이 코드를 보여주세요.</p>
+            <div style={{ background: '#e1f5ee', border: '2px dashed #0f6e56', borderRadius: 12, padding: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>재방문 쿠폰이 발급되었습니다!</p>
+              <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: 4, color: '#0f6e56' }}>{newCoupon.code}</p>
+              <p style={{ fontSize: 14, color: '#085041' }}>{newCoupon.benefit}</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>사장님께 이 코드를 보여주세요.</p>
             </div>
           )}
 
           {/* My coupon wallet */}
           {myCoupons.length > 0 && (
-            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:20 }}>
-              <p className="text-sm font-semibold text-[#2c2c2a] mb-3">내 쿠폰</p>
-              <div className="flex flex-col gap-2">
+            <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 20 }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: '#2c2c2a', marginBottom: 12 }}>내 쿠폰</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {myCoupons.map((c) => (
-                  <div key={c.code} className="flex justify-between items-center py-2 border-b border-[#e5e5e0] last:border-0">
-                    <p className="text-base font-bold tracking-widest text-[#085041]">{c.code}</p>
-                    <p className="text-xs text-[#888780]">{c.benefit}</p>
+                  <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, borderBottom: '1px solid #e5e5e0' }}>
+                    <p style={{ fontSize: 16, fontWeight: 700, letterSpacing: 4, color: '#085041' }}>{c.code}</p>
+                    <p style={{ fontSize: 12, color: '#888780' }}>{c.benefit}</p>
                   </div>
                 ))}
               </div>
@@ -249,11 +245,11 @@ export default function CustomerPage() {
           )}
 
           {/* Refer-a-friend */}
-          <div style={{ background:'#faeeda', border:'1px solid #ef9f27', borderRadius:12, padding:20 }}>
-            <p className="text-sm font-semibold text-[#633806] mb-1">친구 초대 링크</p>
-            <p className="text-xs text-[#633806] mb-3">친구가 이 링크로 가입하면 둘 다 쿠폰을 받아요!</p>
+          <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: 16 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: '#085041', marginBottom: 4 }}>친구 초대 링크</p>
+            <p style={{ fontSize: 12, color: '#5f5e5a', marginBottom: 12 }}>친구가 이 링크로 가입하면 둘 다 쿠폰을 받아요!</p>
             <button
-              className="bg-[#ef9f27] text-[#633806] font-semibold text-sm rounded-lg py-2.5 w-full cursor-pointer"
+              style={{ border: '1px solid #e5e5e0', borderRadius: 8, padding: '12px 20px', color: '#5f5e5a', background: '#fff', fontSize: 14, cursor: 'pointer', width: '100%', boxSizing: 'border-box' }}
               onClick={() => {
                 navigator.clipboard?.writeText(referLink).then(() => alert("링크 복사됨!")).catch(() => {});
               }}
@@ -269,24 +265,20 @@ export default function CustomerPage() {
   // ── B1: Visit purpose question ─────────────────────────────
   if (step === "b1") {
     return (
-      <main className="min-h-screen bg-[#f8f7f4] flex flex-col">
-        <header className="bg-[#0f6e56] px-5 py-5">
-          <p className="font-bold text-base text-white">{storeName}</p>
-          <p className="text-xs text-[#e1f5ee] mt-0.5">단골 쿠폰 등록</p>
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>단골 쿠폰 등록</p>
         </header>
 
-        <div className="flex-1 p-5 flex flex-col gap-5">
-          <h2 className="text-xl font-semibold text-[#2c2c2a]">오늘 어떤 날이세요?</h2>
-          <div className="flex flex-wrap gap-2">
+        <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#2c2c2a' }}>오늘 어떤 날이세요?</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {VISIT_PURPOSES.map((p) => (
               <button
                 key={p}
                 onClick={() => setVisitPurpose(p)}
-                className={`px-5 py-2.5 rounded-full border-2 text-sm font-medium cursor-pointer transition-colors ${
-                  visitPurpose === p
-                    ? "border-[#0f6e56] bg-[#e1f5ee] text-[#085041]"
-                    : "border-[#e5e5e0] bg-white text-[#5f5e5a]"
-                }`}
+                style={{ background: visitPurpose === p ? '#e1f5ee' : '#fff', border: `1px solid ${visitPurpose === p ? '#9fe1cb' : '#e5e5e0'}`, color: visitPurpose === p ? '#085041' : '#2c2c2a', borderRadius: 12, padding: 16, fontSize: 15, fontWeight: 500, cursor: 'pointer' }}
               >
                 {p}
               </button>
@@ -303,26 +295,22 @@ export default function CustomerPage() {
   // ── B2: Contact + Consent ──────────────────────────────────
   if (step === "b2") {
     return (
-      <main className="min-h-screen bg-[#f8f7f4] flex flex-col">
-        <header className="bg-[#0f6e56] px-5 py-5">
-          <p className="font-bold text-base text-white">{storeName}</p>
-          <p className="text-xs text-[#e1f5ee] mt-0.5">단골 쿠폰 등록</p>
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>쿠폰 받을 곳</p>
         </header>
 
-        <div className="flex-1 p-5">
-          <h2 className="text-lg font-semibold text-[#2c2c2a] mb-4">쿠폰을 받으실 연락처를 입력해 주세요</h2>
-          <form onSubmit={handleB2Submit} className="flex flex-col gap-3">
-            <div className="flex gap-2">
+        <div style={{ flex: 1, padding: 20 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#2c2c2a', marginBottom: 16 }}>쿠폰을 받으실 연락처를 입력해 주세요</h2>
+          <form onSubmit={handleB2Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
               {(["phone", "kakao", "email"] as Channel[]).map((ch) => (
                 <button
                   key={ch}
                   type="button"
                   onClick={() => setChannel(ch)}
-                  className={`flex-1 py-2.5 rounded-lg border-2 text-sm font-medium cursor-pointer transition-colors ${
-                    channel === ch
-                      ? "border-[#0f6e56] bg-[#e1f5ee] text-[#085041]"
-                      : "border-[#e5e5e0] bg-white text-[#5f5e5a]"
-                  }`}
+                  style={{ flex: 1, background: channel === ch ? '#0f6e56' : '#fff', color: channel === ch ? '#fff' : '#5f5e5a', border: `1px solid ${channel === ch ? '#0f6e56' : '#e5e5e0'}`, borderRadius: 999, padding: '10px 16px', fontSize: 13, cursor: 'pointer' }}
                 >
                   {CHANNEL_LABELS[ch]}
                 </button>
@@ -344,34 +332,36 @@ export default function CustomerPage() {
               onChange={(e) => setName(e.target.value)}
             />
 
-            <fieldset style={{ border:'1px solid #e5e5e0', borderRadius:8, padding:16 }}>
-              <legend className="text-xs font-semibold text-[#5f5e5a] px-1">동의 항목</legend>
-              <div className="flex flex-col gap-2 mt-1">
-                {[
-                  { key: "required", label: "[필수] 개인정보 수집·이용 동의" },
-                  { key: "thirdparty", label: "[선택] 제3자 제공 동의 (잇다랩)" },
-                  { key: "ad_sms", label: "[선택] 광고 수신 동의 (문자)" },
-                  { key: "ad_kakao", label: "[선택] 광고 수신 동의 (카카오)" },
-                  { key: "ad_email", label: "[선택] 광고 수신 동의 (이메일)" },
-                ].map(({ key, label }) => (
-                  <label key={key} className="flex items-center gap-2 text-sm text-[#2c2c2a] cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={consents[key as keyof typeof consents]}
-                      onChange={(e) => setConsents({ ...consents, [key]: e.target.checked })}
-                      className="accent-[#0f6e56]"
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <div style={{ background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a' }}>동의 항목</p>
+              {[
+                { key: "required", label: "[필수] 개인정보 수집·이용 동의" },
+                { key: "thirdparty", label: "[선택] 제3자 제공 동의 (잇다랩)" },
+                { key: "ad_sms", label: "[선택] 광고 수신 동의 (문자)" },
+                { key: "ad_kakao", label: "[선택] 광고 수신 동의 (카카오)" },
+                { key: "ad_email", label: "[선택] 광고 수신 동의 (이메일)" },
+              ].map(({ key, label }) => (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={consents[key as keyof typeof consents]}
+                    onChange={(e) => setConsents({ ...consents, [key]: e.target.checked })}
+                    className="accent-[#0f6e56]"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
 
-            {errorMsg && <p className="text-xs text-[#d32f2f]">{errorMsg}</p>}
+            {errorMsg && <p style={{ fontSize: 12, color: '#d32f2f' }}>{errorMsg}</p>}
 
-            <PrimaryButton type="submit" disabled={submitting}>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{ background: '#ef9f27', color: '#633806', borderRadius: 8, padding: '16px 20px', fontWeight: 600, fontSize: 16, border: 'none', cursor: 'pointer', width: '100%', boxSizing: 'border-box', opacity: submitting ? 0.6 : 1 }}
+            >
               {submitting ? "제출 중..." : "쿠폰 받기"}
-            </PrimaryButton>
+            </button>
           </form>
         </div>
       </main>
@@ -380,18 +370,18 @@ export default function CustomerPage() {
 
   // ── Done: First coupon issued ──────────────────────────────
   return (
-    <main className="min-h-screen bg-[#f8f7f4] flex flex-col">
-      <header className="bg-[#0f6e56] px-5 py-5">
-        <p className="font-bold text-base text-white">{storeName}</p>
-        <p className="text-xs text-[#e1f5ee] mt-0.5">단골 쿠폰 등록 완료</p>
+    <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+        <p style={{ fontSize: 12, color: '#e1f5ee' }}>단골 쿠폰 등록 완료</p>
       </header>
-      <div className="flex-1 p-5 flex flex-col gap-4">
-        <h2 className="text-xl font-semibold text-[#2c2c2a]">환영합니다! 🎉</h2>
-        <p className="text-sm text-[#5f5e5a]">첫 방문 쿠폰이 발급되었습니다.</p>
-        <div className="bg-[#e1f5ee] border-2 border-dashed border-[#0f6e56] rounded-xl p-6 text-center">
-          <p className="text-[28px] font-black tracking-widest text-[#0f6e56]">{couponCode}</p>
+      <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#2c2c2a' }}>환영합니다! 🎉</h2>
+        <p style={{ fontSize: 14, color: '#5f5e5a' }}>첫 방문 쿠폰이 발급되었습니다.</p>
+        <div style={{ background: '#e1f5ee', border: '2px dashed #0f6e56', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+          <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: 4, color: '#0f6e56' }}>{couponCode}</p>
         </div>
-        <p className="text-sm text-[#888780] text-center">사장님께 이 코드를 보여주세요.</p>
+        <p style={{ fontSize: 14, color: '#888780', textAlign: 'center' }}>사장님께 이 코드를 보여주세요.</p>
       </div>
     </main>
   );
