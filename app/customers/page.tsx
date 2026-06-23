@@ -38,10 +38,10 @@ interface CustomerDetail {
   consents: { type: string; agreed: boolean; agreed_at: string }[];
 }
 
-const GRADE_COLORS: Record<string, string> = {
-  vip: "bg-[#faeeda] text-[#633806]",
-  regular: "bg-[#e1f5ee] text-[#085041]",
-  normal: "bg-[#f8f7f4] text-[#5f5e5a]",
+const GRADE_STYLE: Record<string, { background: string; color: string }> = {
+  vip: { background: '#faeeda', color: '#633806' },
+  regular: { background: '#e1f5ee', color: '#085041' },
+  normal: { background: '#f8f7f4', color: '#5f5e5a' },
 };
 
 function relativeDate(iso: string | null): string {
@@ -115,32 +115,40 @@ export default function CustomersPage() {
       <AppHeader variant="owner" activeItem="고객" />
 
       <main className="flex-1 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-[#2c2c2a]">고객 관리</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>고객 관리</h1>
           <button
             onClick={() => setShowAdd(true)}
-            className="bg-[#0f6e56] text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer"
+            style={{ background: '#0f6e56', color: '#fff', fontSize: 14, fontWeight: 600, padding: '12px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
           >
-            + 직접 등록
+            + 고객 수기 등록
           </button>
         </div>
 
-        <div className="max-w-2xl flex flex-col gap-4">
-          {/* Filters */}
-          <div className="flex gap-2">
-            <select value={grade} onChange={(e) => setGrade(e.target.value)} className={selectCls}>
-              <option value="">등급 전체</option>
-              <option value="vip">VIP</option>
-              <option value="regular">단골</option>
-              <option value="normal">일반</option>
-            </select>
-            <select value={channel} onChange={(e) => setChannel(e.target.value)} className={selectCls}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Grade filter pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[
+              { value: '', label: '전체' },
+              { value: 'vip', label: 'VIP' },
+              { value: 'regular', label: '단골' },
+              { value: 'normal', label: '일반' },
+            ].map(({ value: v, label }) => (
+              <button
+                key={v}
+                onClick={() => setGrade(v)}
+                style={{ background: grade === v ? '#0f6e56' : '#fff', color: grade === v ? '#fff' : '#5f5e5a', border: `1px solid ${grade === v ? '#0f6e56' : '#e5e5e0'}`, borderRadius: 999, padding: '8px 14px', fontSize: 13, cursor: 'pointer' }}
+              >
+                {label}
+              </button>
+            ))}
+            <select value={channel} onChange={(e) => setChannel(e.target.value)} className={selectCls} style={{ maxWidth: 120 }}>
               <option value="">채널 전체</option>
               <option value="phone">전화</option>
               <option value="email">이메일</option>
               <option value="kakao">카카오</option>
             </select>
-            <select value={lastVisitDays} onChange={(e) => setLastVisitDays(e.target.value)} className={selectCls}>
+            <select value={lastVisitDays} onChange={(e) => setLastVisitDays(e.target.value)} className={selectCls} style={{ maxWidth: 120 }}>
               <option value="">방문일 전체</option>
               <option value="30">30일 이상</option>
               <option value="60">60일 이상</option>
@@ -148,37 +156,43 @@ export default function CustomersPage() {
             </select>
           </div>
 
-          {/* List */}
-          {loading ? (
-            <p className="text-center text-sm text-[#888780] py-8">불러오는 중...</p>
-          ) : customers.length === 0 ? (
-            <p className="text-center text-sm text-[#888780] py-8">고객이 없습니다</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {customers.map((c) => (
+          {/* Table card */}
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ background: '#f8f7f4', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>이름</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>연락처</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 1 }}>등급</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 1 }}>방문</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 1 }}>최근 방문</span>
+            </div>
+            {loading ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <p style={{ fontSize: 14, color: '#888780' }}>불러오는 중...</p>
+              </div>
+            ) : customers.length === 0 ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <p style={{ fontSize: 14, color: '#888780' }}>고객이 없습니다</p>
+              </div>
+            ) : (
+              customers.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => openDetail(c.id)}
-                  className={`bg-white border rounded-xl px-5 py-4 text-left flex items-center justify-between cursor-pointer transition-colors ${
-                    selectedId === c.id ? "border-[#0f6e56] ring-1 ring-[#0f6e56]" : "border-[#e5e5e0]"
-                  }`}
+                  style={{ background: selectedId === c.id ? '#f8f7f4' : '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16, width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none', borderTop: '1px solid #e5e5e0' }}
                 >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[#2c2c2a]">{c.name ?? "이름없음"}</span>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${GRADE_COLORS[c.grade]}`}>
-                        {GRADE_LABEL[c.grade]}
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#888780] mt-0.5">
-                      {c.displayContact ?? "-"} · 방문 {c.visit_count}회
-                    </p>
-                  </div>
-                  <p className="text-xs text-[#888780] shrink-0 ml-2">{relativeDate(c.last_visit_at)}</p>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 2 }}>{c.name ?? "이름없음"}</span>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 2 }}>{c.displayContact ?? "-"}</span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ ...GRADE_STYLE[c.grade], borderRadius: 999, padding: '3px 8px', fontSize: 12, fontWeight: 500 }}>
+                      {GRADE_LABEL[c.grade]}
+                    </span>
+                  </span>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 1 }}>{c.visit_count}회</span>
+                  <span style={{ fontSize: 14, color: '#888780', flex: 1 }}>{relativeDate(c.last_visit_at)}</span>
                 </button>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
 
           {/* Detail panel */}
           {selectedId && (
@@ -195,7 +209,7 @@ export default function CustomersPage() {
                         가입 {new Date(detail.customer.created_at).toLocaleDateString("ko-KR")}
                       </p>
                     </div>
-                    <span className={`text-sm px-2 py-1 rounded-full ${GRADE_COLORS[detail.customer.grade]}`}>
+                    <span style={{ ...GRADE_STYLE[detail.customer.grade], borderRadius: 999, padding: '4px 10px', fontSize: 13, fontWeight: 500 }}>
                       {detail.customer.gradeLabel}
                     </span>
                   </div>
@@ -207,11 +221,7 @@ export default function CustomersPage() {
                       {Array.from({ length: detail.stamps.required }).map((_, i) => (
                         <div
                           key={i}
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs border-2 ${
-                            i < detail.stamps.current
-                              ? "border-[#0f6e56] text-[#0f6e56] bg-[#e1f5ee]"
-                              : "border-[#e5e5e0] text-[#e5e5e0]"
-                          }`}
+                          style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, border: `2px solid ${i < detail.stamps.current ? '#0f6e56' : '#e5e5e0'}`, color: i < detail.stamps.current ? '#0f6e56' : '#e5e5e0', background: i < detail.stamps.current ? '#e1f5ee' : '#fff' }}
                         >
                           ★
                         </div>
@@ -249,7 +259,7 @@ export default function CustomersPage() {
                       <p className="text-xs text-[#888780] mb-1.5">동의 항목</p>
                       <div className="flex flex-wrap gap-1">
                         {detail.consents.map((con) => (
-                          <span key={con.type} className="text-xs bg-[#e1f5ee] text-[#085041] px-2 py-0.5 rounded-full">
+                          <span key={con.type} style={{ background: '#e1f5ee', color: '#085041', padding: '2px 8px', borderRadius: 999, fontSize: 12 }}>
                             {con.type}
                           </span>
                         ))}
@@ -286,7 +296,7 @@ export default function CustomersPage() {
                       <button
                         onClick={saveMemo}
                         disabled={memoSaving}
-                        className="text-xs bg-[#0f6e56] text-white px-3 py-1.5 rounded-lg cursor-pointer disabled:opacity-50"
+                        style={{ fontSize: 12, background: '#0f6e56', color: '#fff', padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', opacity: memoSaving ? 0.5 : 1 }}
                       >
                         {memoSaving ? "저장 중..." : "메모 저장"}
                       </button>
@@ -295,7 +305,7 @@ export default function CustomersPage() {
 
                   <Link
                     href={`/messages?customerId=${selectedId}`}
-                    className="block text-center text-sm text-[#0f6e56] border border-[#9fe1cb] rounded-xl py-2.5"
+                    style={{ display: 'block', textAlign: 'center', fontSize: 14, color: '#0f6e56', border: '1px solid #9fe1cb', borderRadius: 12, padding: '10px 0', textDecoration: 'none' }}
                   >
                     이 고객에게 소식 보내기
                   </Link>
