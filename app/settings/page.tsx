@@ -30,7 +30,7 @@ export default async function SettingsPage() {
 
         <div className="max-w-[560px] flex flex-col gap-4">
           {/* Store info */}
-          <section className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+          <section style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
             <h2 className="text-base font-semibold text-[#2c2c2a] mb-4">매장 정보</h2>
             <dl className="flex flex-col gap-3 text-sm">
               <div className="flex justify-between">
@@ -49,7 +49,7 @@ export default async function SettingsPage() {
           </section>
 
           {/* QR download */}
-          <section className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+          <section style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
             <h2 className="text-base font-semibold text-[#2c2c2a] mb-2">QR 코드</h2>
             <p className="text-sm text-[#888780] mb-4">출력해서 카운터에 붙여두세요</p>
             <a
@@ -65,7 +65,7 @@ export default async function SettingsPage() {
           <StaffSection />
 
           {/* Consent text */}
-          <section className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+          <section style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
             <h2 className="text-base font-semibold text-[#2c2c2a] mb-3">개인정보 동의 안내문</h2>
             <p className="text-sm text-[#5f5e5a] leading-relaxed">
               고객님의 개인정보(연락처)는 단골 서비스 제공 및 혜택 안내 목적으로 수집·이용됩니다.
@@ -74,7 +74,7 @@ export default async function SettingsPage() {
           </section>
 
           {/* Operations manual */}
-          <section className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+          <section style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
             <h2 className="text-base font-semibold text-[#2c2c2a] mb-2">운영 매뉴얼</h2>
             <p className="text-sm text-[#888780]">리붐단골 사용 가이드 (준비 중)</p>
           </section>
@@ -90,7 +90,7 @@ export default async function SettingsPage() {
               <Link
                 key={href}
                 href={href}
-                className="bg-white border border-[#e5e5e0] rounded-xl p-4 text-sm text-[#2c2c2a] text-center"
+                style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:16 }} className="text-sm text-[#2c2c2a] text-center block"
               >
                 {label}
               </Link>

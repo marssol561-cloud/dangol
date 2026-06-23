@@ -87,9 +87,9 @@ export default function AutomationPage() {
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">자동화 메시지</h1>
 
-        <div className="max-w-[560px] flex flex-col gap-4">
+        <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Churn rule */}
-          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24 }}>
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="font-semibold text-[#2c2c2a]">장기 미방문 고객 재유입</p>
@@ -130,7 +130,7 @@ export default function AutomationPage() {
           </div>
 
           {/* Anniversary rule */}
-          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24 }}>
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="font-semibold text-[#2c2c2a]">기념일 메시지</p>

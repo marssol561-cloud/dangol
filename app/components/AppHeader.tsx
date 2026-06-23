@@ -43,8 +43,8 @@ type AppHeaderProps = AuthHeaderProps | OwnerHeaderProps | AdminHeaderProps | Cu
 export default function AppHeader(props: AppHeaderProps) {
   if (props.variant === "auth") {
     return (
-      <header className="bg-[#0f6e56] h-16 flex items-center pl-8 shrink-0">
-        <span className="font-bold text-lg text-white">리붐단골</span>
+      <header style={{ background: '#0f6e56', height: 64, display: 'flex', alignItems: 'center', paddingLeft: 32, flexShrink: 0 }}>
+        <span style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>리붐단골</span>
       </header>
     );
   }

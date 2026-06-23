@@ -1,11 +1,30 @@
-import { type ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, CSSProperties } from 'react';
 
-type PrimaryButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
+interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  style?: CSSProperties;
+}
 
-export default function PrimaryButton({ className = '', children, ...props }: PrimaryButtonProps) {
+const btnBase: CSSProperties = {
+  width: '100%',
+  background: '#0f6e56',
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: 15,
+  borderRadius: 8,
+  padding: '14px 20px',
+  border: 'none',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxSizing: 'border-box',
+};
+
+export default function PrimaryButton({ className = '', children, style, ...props }: PrimaryButtonProps) {
   return (
     <button
-      className={`bg-[#0f6e56] rounded-[8px] py-[14px] px-[20px] w-full text-[15px] font-semibold text-white flex items-center justify-center cursor-pointer disabled:opacity-60 ${className}`}
+      style={{ ...btnBase, ...style }}
+      className={`disabled:opacity-60 ${className}`}
       {...props}
     >
       {children}

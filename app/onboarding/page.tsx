@@ -143,11 +143,11 @@ export default function OnboardingPage() {
   const btnOutline = 'border border-[#e5e5e0] text-[#5f5e5a] font-semibold text-sm rounded-[8px] py-[14px] px-[20px] w-full cursor-pointer';
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="auth" />
-      <div className="flex flex-col items-center p-[48px] w-full">
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
         {step === 'connect' ? (
-          <Card className="w-[420px]">
+          <Card>
             <div>
               <p className="text-[24px] font-semibold text-[#2c2c2a]">매장 연결</p>
               <p className="text-[14px] text-[#5f5e5a] mt-[6px]">운영하시는 매장을 검색해 주세요</p>
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
             )}
           </Card>
         ) : (
-          <Card className="w-[420px]">
+          <Card>
             <div>
               <p className="text-[24px] font-semibold text-[#2c2c2a]">QR 코드 발급</p>
               {storeName && <p className="text-[14px] text-[#5f5e5a] mt-[6px]">{storeName}</p>}

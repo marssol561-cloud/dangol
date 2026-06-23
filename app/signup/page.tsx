@@ -66,11 +66,11 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="auth" />
-      <div className="flex flex-col items-center p-[48px] w-full">
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
         <Card>
-          <p className="text-[24px] font-semibold text-[#2c2c2a]">점주 회원가입</p>
+          <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>점주 회원가입</p>
 
           <form onSubmit={handleSubmit} className="contents">
             <FormField label="이름">
@@ -114,7 +114,7 @@ export default function SignupPage() {
               />
             </FormField>
 
-            <div className="flex flex-col gap-[6px]">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
                 <input
                   type="checkbox"
@@ -144,16 +144,16 @@ export default function SignupPage() {
               </label>
             </div>
 
-            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+            {error && <p style={{ fontSize: 12, color: '#d32f2f' }}>{error}</p>}
 
             <PrimaryButton type="submit" disabled={loading}>
               {loading ? '가입 중...' : '회원가입'}
             </PrimaryButton>
           </form>
 
-          <div className="flex items-center gap-[6px]">
-            <span className="text-[13px] text-[#5f5e5a]">이미 계정이 있으신가요?</span>
-            <Link href="/login" className="text-[13px] font-semibold text-[#0f6e56]">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 13, color: '#5f5e5a' }}>이미 계정이 있으신가요?</span>
+            <Link href="/login" style={{ fontSize: 13, fontWeight: 600, color: '#0f6e56' }}>
               로그인
             </Link>
           </div>

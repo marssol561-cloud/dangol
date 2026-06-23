@@ -78,8 +78,8 @@ export default function StampsPage() {
         {loading ? (
           <p className="text-sm text-[#888780]">불러오는 중...</p>
         ) : (
-          <div className="max-w-[560px]">
-            <form onSubmit={handleSave} className="bg-white border border-[#e5e5e0] rounded-[12px] p-[24px] flex flex-col gap-[16px]">
+          <div style={{ maxWidth: 560 }}>
+            <form onSubmit={handleSave} style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <FormField label="리워드 기준 스탬프 수">
                 <Input
                   type="number"
@@ -129,7 +129,7 @@ export default function StampsPage() {
 
               {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
               {saved && (
-                <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-[12px] px-4 py-3">
+                <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: '12px 16px' }}>
                   <p className="text-sm font-semibold text-[#085041]">✓ 저장되었습니다.</p>
                 </div>
               )}

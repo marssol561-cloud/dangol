@@ -51,8 +51,8 @@ export default function CouponUsePage() {
           <h1 className="text-2xl font-semibold text-[#2c2c2a]">쿠폰 사용 처리</h1>
         </div>
 
-        <div className="max-w-[480px]">
-          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 flex flex-col gap-4">
+        <div style={{ maxWidth: 480 }}>
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <p className="text-sm text-[#5f5e5a]">고객의 쿠폰 코드를 입력하고 확인하세요.</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">

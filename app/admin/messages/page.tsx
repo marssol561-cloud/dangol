@@ -52,7 +52,7 @@ export default async function AdminMessagesPage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {channelRows.map(([ch, stat]) => (
-                  <div key={ch} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4">
+                  <div key={ch} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px' }}>
                     <p className="font-medium text-[#2c2c2a] capitalize mb-2">{ch}</p>
                     <div className="flex gap-6">
                       <div>
@@ -82,7 +82,7 @@ export default async function AdminMessagesPage() {
             ) : (
               <div className="flex flex-col gap-2">
                 {sendCh.map((sc) => (
-                  <div key={sc.store_link_id} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-3 flex items-center justify-between">
+                  <div key={sc.store_link_id} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                     <div>
                       <p className="text-sm text-[#2c2c2a]">{sc.provider} · {sc.sender_number ?? "-"}</p>
                       <p className="text-xs text-[#888780]">setup_step: {sc.setup_step}/4</p>

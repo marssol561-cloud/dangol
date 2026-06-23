@@ -68,7 +68,7 @@ export default async function AdminStoresPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {storeList.map((s) => (
-                <div key={s.id} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4">
+                <div key={s.id} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px' }}>
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-medium text-[#2c2c2a]">{s.store_name ?? "-"}</p>

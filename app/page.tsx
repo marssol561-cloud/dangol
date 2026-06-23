@@ -44,7 +44,7 @@ export default async function OwnerDashboardPage() {
         ) : (
           <div className="flex flex-col gap-6">
             {/* Monthly stats card */}
-            <div className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
               <p className="text-xs text-[#888780] mb-4">이번 달</p>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <Link href="/customers?filter=new" className="group">
@@ -65,7 +65,7 @@ export default async function OwnerDashboardPage() {
             </div>
 
             {/* Cumulative + consent card */}
-            <div className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
               <div className="grid grid-cols-2 gap-6">
                 <Link href="/customers" className="block">
                   <p className="text-xs text-[#888780]">누적 단골 이상</p>
@@ -106,7 +106,7 @@ export default async function OwnerDashboardPage() {
                     <Link
                       key={card.segment}
                       href={`/messages?segment=${card.segment}`}
-                      className="flex items-center justify-between bg-white border border-[#e5e5e0] rounded-xl px-5 py-4"
+                      className="flex items-center justify-between" style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px' }}
                     >
                       <span className="text-sm text-[#2c2c2a]">{card.label}</span>
                       <span className="text-[#0f6e56] font-semibold text-sm">
@@ -138,7 +138,7 @@ export default async function OwnerDashboardPage() {
 function EmptyState({ storeLinkId }: { storeLinkId: string }) {
   void storeLinkId;
   return (
-    <div className="bg-white border border-[#e5e5e0] rounded-xl p-10 text-center">
+    <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:40 }} className="text-center">
       <p className="text-4xl mb-4">🏪</p>
       <p className="text-lg font-semibold text-[#2c2c2a] mb-2">첫 손님을 받아보세요</p>
       <p className="text-sm text-[#888780] mb-6">QR 코드를 출력해 카운터에 붙여두세요</p>

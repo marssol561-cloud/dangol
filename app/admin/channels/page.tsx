@@ -98,7 +98,7 @@ export default async function AdminChannelsPage() {
                   const ch = channelMap[s.id];
                   const isComplete = ch && ch.setup_step >= 4;
                   return (
-                    <div key={s.id} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-3 flex items-center justify-between">
+                    <div key={s.id} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                       <div>
                         <p className="text-sm font-medium text-[#2c2c2a]">{s.store_name ?? "-"}</p>
                         <p className="text-xs text-[#888780]">{s.store_code}</p>

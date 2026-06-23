@@ -71,7 +71,7 @@ export default function AdminCustomersPage() {
           ) : (
             <div className="flex flex-col gap-2">
               {customers.map((c) => (
-                <div key={c.id} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4 flex items-center justify-between">
+                <div key={c.id} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                   <div>
                     <p className="text-xs font-mono text-[#888780]">{c.identifier_hash.slice(0, 16)}…</p>
                     <p className="text-xs text-[#888780] mt-0.5">

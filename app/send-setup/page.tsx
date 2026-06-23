@@ -113,11 +113,14 @@ export default function SendSetupPage() {
               return (
                 <div
                   key={i}
-                  className={`border rounded-xl p-5 transition-opacity ${
-                    active ? "border-[#0f6e56] bg-[#e1f5ee]" :
-                    done ? "border-[#9fe1cb] bg-[#f8f7f4]" :
-                    "border-[#e5e5e0] bg-white opacity-50"
-                  }`}
+                  style={{
+                    border: `1px solid ${active ? '#0f6e56' : done ? '#9fe1cb' : '#e5e5e0'}`,
+                    background: active ? '#e1f5ee' : done ? '#f8f7f4' : '#fff',
+                    borderRadius: 12,
+                    padding: 20,
+                    opacity: !active && !done ? 0.5 : 1,
+                    transition: 'opacity 0.15s',
+                  }}
                 >
                   <p className="font-semibold text-[#2c2c2a] mb-0.5">Step {i + 1}: {s.label}</p>
                   <p className="text-sm text-[#5f5e5a]">{s.desc}</p>

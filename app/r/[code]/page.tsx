@@ -202,7 +202,7 @@ export default function CustomerPage() {
           )}
 
           {/* Stamp board */}
-          <div className="bg-white border border-[#e5e5e0] rounded-xl p-5">
+          <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:20 }}>
             <p className="text-sm font-semibold text-[#2c2c2a] mb-3">스탬프 현황</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {Array.from({ length: required }).map((_, i) => (
@@ -235,7 +235,7 @@ export default function CustomerPage() {
 
           {/* My coupon wallet */}
           {myCoupons.length > 0 && (
-            <div className="bg-white border border-[#e5e5e0] rounded-xl p-5">
+            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:20 }}>
               <p className="text-sm font-semibold text-[#2c2c2a] mb-3">내 쿠폰</p>
               <div className="flex flex-col gap-2">
                 {myCoupons.map((c) => (
@@ -249,7 +249,7 @@ export default function CustomerPage() {
           )}
 
           {/* Refer-a-friend */}
-          <div className="bg-[#faeeda] border border-[#ef9f27] rounded-xl p-5">
+          <div style={{ background:'#faeeda', border:'1px solid #ef9f27', borderRadius:12, padding:20 }}>
             <p className="text-sm font-semibold text-[#633806] mb-1">친구 초대 링크</p>
             <p className="text-xs text-[#633806] mb-3">친구가 이 링크로 가입하면 둘 다 쿠폰을 받아요!</p>
             <button
@@ -344,7 +344,7 @@ export default function CustomerPage() {
               onChange={(e) => setName(e.target.value)}
             />
 
-            <fieldset className="border border-[#e5e5e0] rounded-lg p-4">
+            <fieldset style={{ border:'1px solid #e5e5e0', borderRadius:8, padding:16 }}>
               <legend className="text-xs font-semibold text-[#5f5e5a] px-1">동의 항목</legend>
               <div className="flex flex-col gap-2 mt-1">
                 {[

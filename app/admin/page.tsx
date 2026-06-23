@@ -62,7 +62,7 @@ export default async function AdminDashboardPage() {
           {/* KPI cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {kpis.map((k) => (
-              <div key={k.label} className="bg-white border border-[#e5e5e0] rounded-xl p-5">
+              <div key={k.label} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:20 }}>
                 <p className="text-xs text-[#888780] mb-1">{k.label}</p>
                 <p className="text-2xl font-bold text-[#2c2c2a]">{typeof k.value === "number" ? k.value.toLocaleString() : k.value}</p>
               </div>
@@ -75,7 +75,7 @@ export default async function AdminDashboardPage() {
               <Link
                 key={n.href}
                 href={n.href}
-                className="bg-white border border-[#e5e5e0] rounded-xl px-4 py-3 text-sm font-medium text-[#085041]"
+                style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 16px' }} className="text-sm font-medium text-[#085041] block"
               >
                 {n.label}
               </Link>

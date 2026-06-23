@@ -51,7 +51,7 @@ export default async function AdminConsentsPage() {
             const total = s.agreed + s.declined + s.revoked;
             const rate = total > 0 ? Math.round((s.agreed / total) * 100) : 0;
             return (
-              <div key={t} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4">
+              <div key={t} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px' }}>
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-medium text-[#2c2c2a]">{CONSENT_LABELS[t] ?? t}</p>
                   <span className="text-xs text-[#888780]">{rate}% 동의</span>

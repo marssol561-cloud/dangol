@@ -58,7 +58,7 @@ export default async function AdminSystemPage() {
           {/* System info */}
           <section>
             <h2 className="text-sm font-semibold text-[#5f5e5a] mb-3">시스템 정보</h2>
-            <div className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4 flex flex-col gap-3">
+            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px', display:'flex', flexDirection:'column', gap:12 }}>
               <div className="flex justify-between text-sm">
                 <span className="text-[#888780]">스키마 버전</span>
                 <span className="font-mono font-medium text-[#2c2c2a]">{schemaVersion}</span>
@@ -84,7 +84,7 @@ export default async function AdminSystemPage() {
                   href={t.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white border border-[#e5e5e0] rounded-xl px-4 py-3"
+                  style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 16px', display:'block' }}
                 >
                   <p className="text-sm font-medium text-[#085041]">{t.name}</p>
                   <p className="text-xs text-[#888780] mt-0.5">{t.desc}</p>
@@ -101,7 +101,7 @@ export default async function AdminSystemPage() {
             ) : (
               <div className="flex flex-col gap-2">
                 {auditRows.map((a, i) => (
-                  <div key={i} className="bg-white border border-[#e5e5e0] rounded-xl px-4 py-3 text-xs text-[#5f5e5a] flex justify-between">
+                  <div key={i} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 16px', display:'flex', justifyContent:'space-between' }} className="text-xs text-[#5f5e5a]">
                     <span>
                       <span className="font-medium">{a.action}</span>
                       {" → "}{a.target}

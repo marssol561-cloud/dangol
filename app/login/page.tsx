@@ -65,11 +65,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="auth" />
-      <div className="flex flex-col items-center p-[48px] w-full">
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
         <Card>
-          <p className="text-[24px] font-semibold text-[#2c2c2a]">사장님 로그인</p>
+          <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>사장님 로그인</p>
 
           <form onSubmit={handleSubmit} className="contents">
             <FormField label="이메일">
@@ -92,23 +92,23 @@ export default function LoginPage() {
               />
             </FormField>
 
-            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+            {error && <p style={{ fontSize: 12, color: '#d32f2f' }}>{error}</p>}
 
             <PrimaryButton type="submit" disabled={loading}>
               {loading ? '로그인 중...' : '로그인'}
             </PrimaryButton>
           </form>
 
-          <div className="flex items-center gap-[6px]">
-            <span className="text-[13px] text-[#5f5e5a]">계정이 없으세요?</span>
-            <Link href="/signup" className="text-[13px] font-medium text-[#0f6e56]">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 13, color: '#5f5e5a' }}>계정이 없으세요?</span>
+            <Link href="/signup" style={{ fontSize: 13, fontWeight: 500, color: '#0f6e56' }}>
               회원가입
             </Link>
           </div>
 
           <button
             onClick={handlePasswordReset}
-            className="text-[13px] font-medium text-[#0f6e56] bg-transparent border-none cursor-pointer p-0 text-left"
+            style={{ fontSize: 13, fontWeight: 500, color: '#0f6e56', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
           >
             비밀번호 찾기
           </button>

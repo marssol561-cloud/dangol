@@ -182,7 +182,7 @@ export default function CustomersPage() {
 
           {/* Detail panel */}
           {selectedId && (
-            <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 flex flex-col gap-4">
+            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24, display:'flex', flexDirection:'column', gap:16 }}>
               {detailLoading ? (
                 <p className="text-sm text-[#888780]">상세 정보 로딩 중...</p>
               ) : detail ? (
