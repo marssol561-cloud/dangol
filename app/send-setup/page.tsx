@@ -88,8 +88,6 @@ export default function SendSetupPage() {
     setSaving(false);
   }
 
-  const progressPct = Math.round((step / 4) * 100);
-
   return (
     <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
       <AppHeader variant="owner" activeItem="설정" />
@@ -97,13 +95,26 @@ export default function SendSetupPage() {
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">메시지 발송 설정</h1>
 
-        <div className="max-w-[560px]">
-          {/* Progress bar */}
-          <div className="bg-[#e5e5e0] rounded-full h-2 mb-6">
-            <div
-              className="bg-[#0f6e56] h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
+        <div style={{ maxWidth: 560 }}>
+          {/* Circle progress tracker */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+            {STEPS.map((s, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  background: step > i ? '#0f6e56' : step === i ? '#ef9f27' : '#fff',
+                  border: `1px solid ${step > i ? '#0f6e56' : step === i ? '#ef9f27' : '#e5e5e0'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: step > i ? '#fff' : step === i ? '#633806' : '#888780',
+                  fontSize: 12, fontWeight: 600,
+                }}>
+                  {step > i ? '✓' : i + 1}
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div style={{ height: 2, width: 60, flexShrink: 0, background: step > i ? '#0f6e56' : '#e5e5e0' }} />
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="flex flex-col gap-3">

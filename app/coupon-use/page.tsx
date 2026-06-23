@@ -51,7 +51,7 @@ export default function CouponUsePage() {
           <h1 className="text-2xl font-semibold text-[#2c2c2a]">쿠폰 사용 처리</h1>
         </div>
 
-        <div style={{ maxWidth: 480 }}>
+        <div style={{ maxWidth: 560 }}>
           <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <p className="text-sm text-[#5f5e5a]">고객의 쿠폰 코드를 입력하고 확인하세요.</p>
 
@@ -72,7 +72,7 @@ export default function CouponUsePage() {
             </form>
 
             {result !== null && (
-              <div className={`rounded-xl p-5 flex flex-col gap-2 ${result.valid ? "bg-[#e1f5ee] border border-[#9fe1cb]" : "bg-[#fff0f0] border-2 border-[#d32f2f]"}`}>
+              <div style={{ borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 8, background: result.valid ? '#e1f5ee' : '#fff0f0', border: result.valid ? '1px solid #9fe1cb' : '2px solid #d32f2f' }}>
                 {result.valid ? (
                   <>
                     <p className="text-lg font-bold text-[#085041]">✅ 쿠폰 사용 완료</p>

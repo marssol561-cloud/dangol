@@ -76,10 +76,12 @@ export default function StampsPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-[#888780]">불러오는 중...</p>
+          <p style={{ fontSize: 14, color: '#888780' }}>불러오는 중...</p>
         ) : (
-          <div style={{ maxWidth: 560 }}>
-            <form onSubmit={handleSave} style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* 스탬프 정책 카드 */}
+            <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: '#2c2c2a' }}>스탬프 정책</p>
               <FormField label="리워드 기준 스탬프 수">
                 <Input
                   type="number"
@@ -90,7 +92,6 @@ export default function StampsPage() {
                   required
                 />
               </FormField>
-
               <FormField label="리워드 설명">
                 <Input
                   type="text"
@@ -99,46 +100,52 @@ export default function StampsPage() {
                   onChange={(e) => setPolicy({ ...policy, reward_desc: e.target.value || null })}
                 />
               </FormField>
+            </div>
 
-              <FormField label="첫 방문 쿠폰 혜택 (A)">
+            {/* 쿠폰 유형 3열 카드 */}
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 260, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#2c2c2a' }}>첫 방문 쿠폰 (A)</p>
                 <Input
                   type="text"
                   placeholder="예: 첫 방문 10% 할인"
                   value={policy.service_a ?? ""}
                   onChange={(e) => setPolicy({ ...policy, service_a: e.target.value || null })}
                 />
-              </FormField>
-
-              <FormField label="재방문 쿠폰 혜택 (B)">
+              </div>
+              <div style={{ flex: 1, minWidth: 260, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#2c2c2a' }}>재방문 쿠폰 (B)</p>
                 <Input
                   type="text"
                   placeholder="예: 재방문 음료 1+1"
                   value={policy.service_b ?? ""}
                   onChange={(e) => setPolicy({ ...policy, service_b: e.target.value || null })}
                 />
-              </FormField>
-
-              <FormField label="친구 추천 쿠폰 혜택 (C)">
+              </div>
+              <div style={{ flex: 1, minWidth: 260, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#2c2c2a' }}>친구 추천 쿠폰 (C)</p>
                 <Input
                   type="text"
                   placeholder="예: 친구 추천 500원 할인"
                   value={policy.service_c ?? ""}
                   onChange={(e) => setPolicy({ ...policy, service_c: e.target.value || null })}
                 />
-              </FormField>
+              </div>
+            </div>
 
-              {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
-              {saved && (
-                <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: '12px 16px' }}>
-                  <p className="text-sm font-semibold text-[#085041]">✓ 저장되었습니다.</p>
-                </div>
-              )}
+            {error && <p style={{ fontSize: 12, color: '#d32f2f' }}>{error}</p>}
+            {saved && (
+              <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: '12px 16px' }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>✓ 저장되었습니다.</p>
+              </div>
+            )}
 
+            <div style={{ maxWidth: 240 }}>
               <PrimaryButton type="submit" disabled={saving}>
                 {saving ? "저장 중..." : "저장"}
               </PrimaryButton>
-            </form>
-          </div>
+            </div>
+          </form>
         )}
       </main>
     </div>

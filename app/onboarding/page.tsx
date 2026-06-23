@@ -140,17 +140,17 @@ export default function OnboardingPage() {
     window.open(`/api/qr?code=${code}`, '_blank');
   }
 
-  const btnOutline = 'border border-[#e5e5e0] text-[#5f5e5a] font-semibold text-sm rounded-[8px] py-[14px] px-[20px] w-full cursor-pointer';
+  const btnOutlineStyle = { border: '1px solid #e5e5e0', color: '#5f5e5a', fontWeight: 600, fontSize: 14, borderRadius: 8, padding: '14px 20px', width: '100%', cursor: 'pointer', background: '#fff', boxSizing: 'border-box' as const };
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="auth" />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
         {step === 'connect' ? (
-          <Card>
+          <Card style={{ maxWidth: 520 }}>
             <div>
-              <p className="text-[24px] font-semibold text-[#2c2c2a]">매장 연결</p>
-              <p className="text-[14px] text-[#5f5e5a] mt-[6px]">운영하시는 매장을 검색해 주세요</p>
+              <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>매장 연결</p>
+              <p style={{ fontSize: 14, color: '#5f5e5a', marginTop: 6 }}>운영하시는 매장을 검색해 주세요</p>
             </div>
 
             <form onSubmit={handleSearch} className="contents">
@@ -178,10 +178,10 @@ export default function OnboardingPage() {
             {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
 
             {searched && results.length === 0 && (
-              <div className="p-[16px] bg-[#f8f7f4] border border-[#e5e5e0] rounded-[12px] flex flex-col gap-[12px]">
-                <p className="text-sm text-[#5f5e5a]">등록된 매장이 없습니다.</p>
+              <div style={{ padding: 16, background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 14, color: '#5f5e5a' }}>등록된 매장이 없습니다.</p>
                 {!requestSent ? (
-                  <form onSubmit={handleStoreRequest} className="flex flex-col gap-[12px]">
+                  <form onSubmit={handleStoreRequest} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <p className="text-xs text-[#888780]">잇다랩에 매장 등록을 요청할 수 있습니다:</p>
                     <Input
                       type="text"
@@ -196,7 +196,7 @@ export default function OnboardingPage() {
                       value={requestAddress}
                       onChange={(e) => setRequestAddress(e.target.value)}
                     />
-                    <button type="submit" disabled={loading} className={btnOutline}>
+                    <button type="submit" disabled={loading} style={btnOutlineStyle}>
                       {loading ? '요청 중...' : '잇다랩에 매장 등록 요청'}
                     </button>
                   </form>
@@ -209,11 +209,11 @@ export default function OnboardingPage() {
             )}
 
             {results.length > 0 && (
-              <ul className="flex flex-col gap-[8px]">
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', margin: 0, padding: 0 }}>
                 {results.map((s) => (
                   <li
                     key={s.store_id}
-                    className="flex justify-between items-center p-[16px] border border-[#e5e5e0] rounded-[12px] bg-white"
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, border: '1px solid #e5e5e0', borderRadius: 12, background: '#fff' }}
                   >
                     <div>
                       <p className="font-semibold text-sm text-[#2c2c2a]">{s.store_name}</p>
@@ -232,22 +232,22 @@ export default function OnboardingPage() {
             )}
           </Card>
         ) : (
-          <Card>
+          <Card style={{ maxWidth: 520 }}>
             <div>
-              <p className="text-[24px] font-semibold text-[#2c2c2a]">QR 코드 발급</p>
-              {storeName && <p className="text-[14px] text-[#5f5e5a] mt-[6px]">{storeName}</p>}
+              <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>환영합니다! 3단계면 시작 🎉</p>
+              {storeName && <p style={{ fontSize: 14, color: '#5f5e5a', marginTop: 6 }}>{storeName}</p>}
             </div>
 
-            <div className="flex items-center gap-[8px]">
-              <div className="w-7 h-7 rounded-full bg-[#0f6e56] flex items-center justify-center text-white text-xs font-semibold">✓</div>
-              <div className="h-0.5 w-12 bg-[#9fe1cb]" />
-              <div className="w-7 h-7 rounded-full bg-[#ef9f27] flex items-center justify-center text-[#633806] text-xs font-semibold">2</div>
-              <div className="h-0.5 w-12 bg-[#e5e5e0]" />
-              <div className="w-7 h-7 rounded-full border border-[#e5e5e0] flex items-center justify-center text-[#888780] text-xs font-semibold">3</div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0f6e56', border: '1px solid #0f6e56', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>✓</div>
+              <div style={{ height: 2, width: 60, background: '#9fe1cb', flexShrink: 0 }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#ef9f27', border: '1px solid #ef9f27', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#633806', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>2</div>
+              <div style={{ height: 2, width: 60, background: '#e5e5e0', flexShrink: 0 }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#fff', border: '1px solid #e5e5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888780', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>3</div>
             </div>
 
-            <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-[12px] p-[16px]">
-              <p className="text-sm font-semibold text-[#085041]">✓ 매장 연결 완료</p>
+            <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: 16 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>✓ 매장 연결 완료</p>
             </div>
 
             <PrimaryButton onClick={handleQrDownload}>
@@ -256,7 +256,7 @@ export default function OnboardingPage() {
 
             {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
 
-            <button onClick={() => router.push('/')} className={btnOutline}>
+            <button onClick={() => router.push('/')} style={btnOutlineStyle}>
               대시보드로 이동
             </button>
 

@@ -69,8 +69,9 @@ export default function SignupPage() {
     <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="auth" />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
-        <Card>
+        <Card style={{ maxWidth: 440 }}>
           <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>점주 회원가입</p>
+          <p style={{ fontSize: 13, color: '#5f5e5a' }}>사장님 계정을 만들어 단골 관리를 시작하세요.</p>
 
           <form onSubmit={handleSubmit} className="contents">
             <FormField label="이름">
@@ -114,8 +115,8 @@ export default function SignupPage() {
               />
             </FormField>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+            <div style={{ background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={form.termsAgreed}
@@ -124,7 +125,7 @@ export default function SignupPage() {
                 />
                 [필수] 이용약관 동의
               </label>
-              <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={form.privacyAgreed}
@@ -133,7 +134,7 @@ export default function SignupPage() {
                 />
                 [필수] 개인정보 처리방침 동의
               </label>
-              <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={form.marketingConsent}
