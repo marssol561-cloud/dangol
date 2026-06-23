@@ -18,6 +18,10 @@ const adminNavItems = [
   { href: "/admin/channels", label: "채널 연결" },
 ];
 
+interface AuthHeaderProps {
+  variant: "auth";
+}
+
 interface OwnerHeaderProps {
   variant: "owner";
   activeItem?: string;
@@ -34,9 +38,17 @@ interface CustomerHeaderProps {
   subtitle: string;
 }
 
-type AppHeaderProps = OwnerHeaderProps | AdminHeaderProps | CustomerHeaderProps;
+type AppHeaderProps = AuthHeaderProps | OwnerHeaderProps | AdminHeaderProps | CustomerHeaderProps;
 
 export default function AppHeader(props: AppHeaderProps) {
+  if (props.variant === "auth") {
+    return (
+      <header className="bg-[#0f6e56] h-16 flex items-center pl-8 shrink-0">
+        <span className="font-bold text-lg text-white">리붐단골</span>
+      </header>
+    );
+  }
+
   if (props.variant === "customer") {
     return (
       <header className="bg-[#0f6e56] px-5 py-5 shrink-0">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUpOwner } from '@/lib/auth';
+import AppHeader from '@/app/components/AppHeader';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -61,12 +62,11 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-4">
-      <div className="bg-white border border-[#e5e5e0] rounded-xl p-8 w-full max-w-[440px] shadow-sm">
-        <div className="text-center mb-6">
-          <h1 className="text-[28px] font-bold text-[#0f6e56] leading-tight">리붐단골</h1>
-          <p className="mt-1 text-sm text-[#5f5e5a]">점주 회원가입</p>
-        </div>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="auth" />
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-12">
+      <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 w-full max-w-[440px]">
+        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-4">점주 회원가입</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
@@ -163,6 +163,7 @@ export default function SignupPage() {
           </Link>
         </div>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }
