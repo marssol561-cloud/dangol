@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
 import Link from "next/link";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminDashboardPage() {
   const user = await getSessionUser();
@@ -42,45 +43,46 @@ export default async function AdminDashboardPage() {
   ];
 
   const navItems = [
-    { href: "/admin/stores", label: "C2 매장 목록" },
-    { href: "/admin/customers", label: "C3 통합 고객" },
-    { href: "/admin/messages", label: "C4 메시지/비용" },
-    { href: "/admin/consents", label: "C5 동의/법무" },
-    { href: "/admin/system", label: "C6 시스템" },
-    { href: "/admin/channels", label: "C7 채널 모니터링" },
+    { href: "/admin/stores", label: "매장" },
+    { href: "/admin/customers", label: "통합 고객" },
+    { href: "/admin/messages", label: "발송·비용" },
+    { href: "/admin/consents", label: "동의·법무" },
+    { href: "/admin/system", label: "시스템" },
+    { href: "/admin/channels", label: "채널 연결" },
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-900">ReBoom 관리자 — C1 대시보드</h1>
-        <span className="text-xs text-gray-400">ADMIN</span>
-      </header>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="admin" activeItem="통합 대시보드" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* KPI cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {kpis.map((k) => (
-            <div key={k.label} className="bg-white rounded-2xl shadow-sm p-5">
-              <p className="text-xs text-gray-400 mb-1">{k.label}</p>
-              <p className="text-2xl font-bold text-gray-900">{k.value.toLocaleString()}</p>
-            </div>
-          ))}
-        </div>
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">통합 대시보드</h1>
 
-        {/* Nav */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {navItems.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="bg-white rounded-2xl shadow-sm px-4 py-3 text-sm font-medium text-teal-700 hover:bg-teal-50 transition"
-            >
-              {n.label}
-            </Link>
-          ))}
+        <div className="max-w-3xl flex flex-col gap-6">
+          {/* KPI cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {kpis.map((k) => (
+              <div key={k.label} className="bg-white border border-[#e5e5e0] rounded-xl p-5">
+                <p className="text-xs text-[#888780] mb-1">{k.label}</p>
+                <p className="text-2xl font-bold text-[#2c2c2a]">{typeof k.value === "number" ? k.value.toLocaleString() : k.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Nav */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {navItems.map((n) => (
+              <Link
+                key={n.href}
+                href={n.href}
+                className="bg-white border border-[#e5e5e0] rounded-xl px-4 py-3 text-sm font-medium text-[#085041]"
+              >
+                {n.label}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

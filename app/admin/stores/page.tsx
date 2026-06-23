@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
 import Link from "next/link";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminStoresPage() {
   const user = await getSessionUser();
@@ -23,7 +24,6 @@ export default async function AdminStoresPage() {
     created_at: string;
   }[];
 
-  // Get per-store customer counts
   const storeIds = storeList.map((s) => s.id);
   const countsMap: Record<string, number> = {};
 
@@ -38,7 +38,6 @@ export default async function AdminStoresPage() {
     }
   }
 
-  // Get per-store sent message counts
   const sentMap: Record<string, number> = {};
   if (storeIds.length > 0) {
     const { data: msgs } = await db
@@ -53,44 +52,48 @@ export default async function AdminStoresPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center gap-4">
-        <Link href="/admin" className="text-gray-400 text-sm">← 대시보드</Link>
-        <h1 className="text-lg font-bold text-gray-900">C2 매장 목록</h1>
-        <span className="ml-auto text-xs text-gray-400">{storeList.length}개 매장</span>
-      </header>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="admin" activeItem="매장" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        {storeList.length === 0 ? (
-          <p className="text-center text-sm text-gray-400 py-12">등록된 매장이 없습니다</p>
-        ) : (
-          <div className="space-y-3">
-            {storeList.map((s) => (
-              <div key={s.id} className="bg-white rounded-2xl shadow-sm px-5 py-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium text-gray-800">{s.store_name ?? "-"}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{s.store_code} · {s.address ?? "-"}</p>
+      <main className="flex-1 p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/admin" className="text-[#888780] text-sm">← 대시보드</Link>
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">매장</h1>
+          <span className="ml-auto text-xs text-[#888780]">{storeList.length}개 매장</span>
+        </div>
+
+        <div className="max-w-3xl">
+          {storeList.length === 0 ? (
+            <p className="text-center text-sm text-[#888780] py-12">등록된 매장이 없습니다</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {storeList.map((s) => (
+                <div key={s.id} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-[#2c2c2a]">{s.store_name ?? "-"}</p>
+                      <p className="text-xs text-[#888780] mt-0.5">{s.store_code} · {s.address ?? "-"}</p>
+                    </div>
+                    <span className="text-xs text-[#888780] shrink-0">
+                      {new Date(s.created_at).toLocaleDateString("ko-KR")}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-400 shrink-0">
-                    {new Date(s.created_at).toLocaleDateString("ko-KR")}
-                  </span>
+                  <div className="flex gap-6 mt-3">
+                    <div>
+                      <p className="text-xs text-[#888780]">고객 수</p>
+                      <p className="text-lg font-bold text-[#2c2c2a]">{(countsMap[s.id] ?? 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#888780]">발송 수</p>
+                      <p className="text-lg font-bold text-[#2c2c2a]">{(sentMap[s.id] ?? 0).toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-6 mt-3">
-                  <div>
-                    <p className="text-xs text-gray-400">고객 수</p>
-                    <p className="text-lg font-bold text-gray-900">{(countsMap[s.id] ?? 0).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">발송 수</p>
-                    <p className="text-lg font-bold text-gray-900">{(sentMap[s.id] ?? 0).toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

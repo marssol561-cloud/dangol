@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import AppHeader from "@/app/components/AppHeader";
 
 const STEPS = [
   { label: "카카오 채널", desc: "카카오 비즈니스 채널 ID 입력" },
@@ -17,6 +18,8 @@ interface ChannelData {
   connected: boolean;
   has_api_key: boolean;
 }
+
+const inputCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full";
 
 export default function SendSetupPage() {
   const [storeLinkId, setStoreLinkId] = useState("");
@@ -88,130 +91,91 @@ export default function SendSetupPage() {
   const progressPct = Math.round((step / 4) * 100);
 
   return (
-    <main style={{ maxWidth: 560, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>메시지 발송 설정</h1>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="owner" activeItem="설정" />
 
-      {/* Progress bar */}
-      <div style={{ background: "#e5e7eb", borderRadius: 999, height: 8, marginBottom: 24 }}>
-        <div style={{ background: "#2563eb", width: `${progressPct}%`, height: 8, borderRadius: 999, transition: "width .3s" }} />
-      </div>
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">메시지 발송 설정</h1>
 
-      {/* Step cards */}
-      {STEPS.map((s, i) => {
-        const done = step > i;
-        const active = step === i;
-        return (
-          <div
-            key={i}
-            style={{
-              border: `1px solid ${active ? "#2563eb" : done ? "#86efac" : "#e5e7eb"}`,
-              borderRadius: 10,
-              padding: 16,
-              marginBottom: 16,
-              background: done ? "#f0fff4" : active ? "#eff6ff" : "#fafafa",
-              opacity: !done && !active ? 0.5 : 1,
-            }}
-          >
-            <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{`Step ${i + 1}: ${s.label}`}</p>
-            <p style={{ margin: 0, fontSize: 13, color: "#555" }}>{s.desc}</p>
-
-            {active && i === 0 && (
-              <div style={{ marginTop: 12 }}>
-                <input
-                  value={kakaoId}
-                  onChange={(e) => setKakaoId(e.target.value)}
-                  placeholder="pfXXXXXXXXXXXXXXXX"
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-                />
-                <button
-                  onClick={() => save(1, { kakao_channel_id: kakaoId })}
-                  disabled={saving}
-                  style={btnStyle}
-                >
-                  {saving ? "저장 중..." : "저장 후 다음"}
-                </button>
-                <p style={{ fontSize: 12, color: "#888", marginTop: 6 }}>* 알림톡 미연결 시 SMS/이메일로 자동 전환됩니다.</p>
-              </div>
-            )}
-
-            {active && i === 1 && (
-              <div style={{ marginTop: 12 }}>
-                <input
-                  value={senderNum}
-                  onChange={(e) => setSenderNum(e.target.value)}
-                  placeholder="01012345678"
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-                />
-                <button
-                  onClick={() => save(2, { sender_number: senderNum })}
-                  disabled={saving}
-                  style={btnStyle}
-                >
-                  {saving ? "저장 중..." : "저장 후 다음"}
-                </button>
-              </div>
-            )}
-
-            {active && i === 2 && (
-              <div style={{ marginTop: 12 }}>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Solapi API Secret Key"
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-                />
-                <p style={{ fontSize: 12, color: "#888", margin: "6px 0" }}>
-                  * 키는 암호화 저장되며 이후 조회되지 않습니다.
-                </p>
-                <button
-                  onClick={() => save(3, { api_key: apiKey })}
-                  disabled={saving || !apiKey}
-                  style={btnStyle}
-                >
-                  {saving ? "저장 중..." : "저장 후 다음"}
-                </button>
-              </div>
-            )}
-
-            {active && i === 3 && (
-              <div style={{ marginTop: 12 }}>
-                <p style={{ fontSize: 14, marginBottom: 12 }}>테스트 발송 후 연결을 완료합니다.</p>
-                <button
-                  onClick={() => save(4, { connected: true })}
-                  disabled={saving}
-                  style={{ ...btnStyle, background: "#16a34a" }}
-                >
-                  {saving ? "연결 중..." : "연결 완료"}
-                </button>
-              </div>
-            )}
-
-            {done && <p style={{ marginTop: 8, fontSize: 13, color: "#16a34a", fontWeight: 600 }}>✓ 완료</p>}
+        <div className="max-w-[560px]">
+          {/* Progress bar */}
+          <div className="bg-[#e5e5e0] rounded-full h-2 mb-6">
+            <div
+              className="bg-[#0f6e56] h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPct}%` }}
+            />
           </div>
-        );
-      })}
 
-      {msg && <p style={{ color: "#c00", fontSize: 14 }}>{msg}</p>}
+          <div className="flex flex-col gap-3">
+            {STEPS.map((s, i) => {
+              const done = step > i;
+              const active = step === i;
+              return (
+                <div
+                  key={i}
+                  className={`border rounded-xl p-5 transition-opacity ${
+                    active ? "border-[#0f6e56] bg-[#e1f5ee]" :
+                    done ? "border-[#9fe1cb] bg-[#f8f7f4]" :
+                    "border-[#e5e5e0] bg-white opacity-50"
+                  }`}
+                >
+                  <p className="font-semibold text-[#2c2c2a] mb-0.5">Step {i + 1}: {s.label}</p>
+                  <p className="text-sm text-[#5f5e5a]">{s.desc}</p>
 
-      {channel?.connected && (
-        <div style={{ padding: 16, background: "#f0fff4", borderRadius: 10, border: "1px solid #86efac", textAlign: "center" }}>
-          <p style={{ margin: 0, fontWeight: 700, color: "#16a34a" }}>🎉 발송 채널 연결 완료!</p>
-          <p style={{ margin: "4px 0 0", fontSize: 13 }}>메시지 발송 기능을 사용할 수 있습니다.</p>
+                  {active && i === 0 && (
+                    <div className="mt-4 flex flex-col gap-2">
+                      <input value={kakaoId} onChange={(e) => setKakaoId(e.target.value)} placeholder="pfXXXXXXXXXXXXXXXX" className={inputCls} />
+                      <button onClick={() => save(1, { kakao_channel_id: kakaoId })} disabled={saving} className="bg-[#0f6e56] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60 self-start">
+                        {saving ? "저장 중..." : "저장 후 다음"}
+                      </button>
+                      <p className="text-xs text-[#888780]">* 알림톡 미연결 시 SMS/이메일로 자동 전환됩니다.</p>
+                    </div>
+                  )}
+
+                  {active && i === 1 && (
+                    <div className="mt-4 flex flex-col gap-2">
+                      <input value={senderNum} onChange={(e) => setSenderNum(e.target.value)} placeholder="01012345678" className={inputCls} />
+                      <button onClick={() => save(2, { sender_number: senderNum })} disabled={saving} className="bg-[#0f6e56] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60 self-start">
+                        {saving ? "저장 중..." : "저장 후 다음"}
+                      </button>
+                    </div>
+                  )}
+
+                  {active && i === 2 && (
+                    <div className="mt-4 flex flex-col gap-2">
+                      <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Solapi API Secret Key" className={inputCls} />
+                      <p className="text-xs text-[#888780]">* 키는 암호화 저장되며 이후 조회되지 않습니다.</p>
+                      <button onClick={() => save(3, { api_key: apiKey })} disabled={saving || !apiKey} className="bg-[#0f6e56] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60 self-start">
+                        {saving ? "저장 중..." : "저장 후 다음"}
+                      </button>
+                    </div>
+                  )}
+
+                  {active && i === 3 && (
+                    <div className="mt-4">
+                      <p className="text-sm text-[#5f5e5a] mb-3">테스트 발송 후 연결을 완료합니다.</p>
+                      <button onClick={() => save(4, { connected: true })} disabled={saving} className="bg-[#085041] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60">
+                        {saving ? "연결 중..." : "연결 완료"}
+                      </button>
+                    </div>
+                  )}
+
+                  {done && <p className="mt-3 text-sm font-semibold text-[#085041]">✓ 완료</p>}
+                </div>
+              );
+            })}
+          </div>
+
+          {msg && <p className="text-[#d32f2f] text-sm mt-3">{msg}</p>}
+
+          {channel?.connected && (
+            <div className="mt-4 bg-[#e1f5ee] border border-[#9fe1cb] rounded-xl px-5 py-4 text-center">
+              <p className="font-bold text-[#085041]">🎉 발송 채널 연결 완료!</p>
+              <p className="text-sm text-[#085041] mt-1">메시지 발송 기능을 사용할 수 있습니다.</p>
+            </div>
+          )}
         </div>
-      )}
-    </main>
+      </main>
+    </div>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  marginTop: 10,
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  borderRadius: 6,
-  padding: "10px 20px",
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: "pointer",
-};

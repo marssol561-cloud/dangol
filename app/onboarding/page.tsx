@@ -24,7 +24,6 @@ export default function OnboardingPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Check if store already connected
   useEffect(() => {
     async function checkOwner() {
       const supabase = getBrowserSupabase();
@@ -110,7 +109,6 @@ export default function OnboardingPage() {
   }
 
   async function handleQrDownload() {
-    // Get store_code from DB if not already set (resuming session)
     let code = storeCode;
     if (!code) {
       const supabase = getBrowserSupabase();
@@ -137,65 +135,75 @@ export default function OnboardingPage() {
     window.open(`/api/qr?code=${code}`, '_blank');
   }
 
+  const inputCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full";
+  const btnPrimary = "bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60";
+  const btnOutline = "border border-[#e5e5e0] text-[#5f5e5a] font-semibold text-sm rounded-lg py-3 w-full cursor-pointer";
+
   // ─── Step: Connect ────────────────────────────────────────
   if (step === 'connect') {
     return (
-      <main style={styles.container}>
-        <div style={styles.card}>
-          <h1 style={styles.title}>매장 연결</h1>
-          <p style={styles.subtitle}>운영하시는 매장을 검색해 주세요</p>
+      <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-4">
+        <div className="bg-white border border-[#e5e5e0] rounded-xl p-8 w-full max-w-[480px] shadow-sm">
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold text-[#2c2c2a] leading-tight">매장 연결</h1>
+            <p className="mt-1 text-sm text-[#5f5e5a]">운영하시는 매장을 검색해 주세요</p>
+          </div>
 
-          <form onSubmit={handleSearch} style={styles.form}>
-            <input
-              type="text"
-              placeholder="매장명"
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="주소"
-              value={searchAddress}
-              onChange={(e) => setSearchAddress(e.target.value)}
-              style={styles.input}
-            />
-            <button type="submit" disabled={searching} style={styles.button}>
+          <form onSubmit={handleSearch} className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#5f5e5a]">매장명</label>
+              <input
+                type="text"
+                placeholder="매장명"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#5f5e5a]">주소</label>
+              <input
+                type="text"
+                placeholder="주소"
+                value={searchAddress}
+                onChange={(e) => setSearchAddress(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <button type="submit" disabled={searching} className={btnPrimary}>
               {searching ? '검색 중...' : '검색'}
             </button>
           </form>
 
-          {error && <p style={styles.error}>{error}</p>}
+          {error && <p className="text-[#d32f2f] text-xs mt-3">{error}</p>}
 
           {searched && results.length === 0 && (
-            <div style={styles.emptyBox}>
-              <p style={styles.emptyText}>등록된 매장이 없습니다.</p>
+            <div className="mt-4 p-4 bg-[#f8f7f4] border border-[#e5e5e0] rounded-xl">
+              <p className="text-sm text-[#5f5e5a] mb-3">등록된 매장이 없습니다.</p>
               {!requestSent ? (
-                <form onSubmit={handleStoreRequest} style={styles.form}>
-                  <p style={{ fontSize: 13, color: '#555', margin: '4px 0 8px' }}>
-                    잇다랩에 매장 등록을 요청할 수 있습니다:
-                  </p>
+                <form onSubmit={handleStoreRequest} className="flex flex-col gap-3">
+                  <p className="text-xs text-[#888780]">잇다랩에 매장 등록을 요청할 수 있습니다:</p>
                   <input
                     type="text"
                     placeholder="매장명 *"
                     value={requestName}
                     onChange={(e) => setRequestName(e.target.value)}
                     required
-                    style={styles.input}
+                    className={inputCls}
                   />
                   <input
                     type="text"
                     placeholder="주소"
                     value={requestAddress}
                     onChange={(e) => setRequestAddress(e.target.value)}
-                    style={styles.input}
+                    className={inputCls}
                   />
-                  <button type="submit" disabled={loading} style={styles.buttonOutline}>
+                  <button type="submit" disabled={loading} className={btnOutline}>
                     {loading ? '요청 중...' : '잇다랩에 매장 등록 요청'}
                   </button>
                 </form>
               ) : (
-                <p style={{ color: '#12787A', fontSize: 14 }}>
+                <p className="text-[#0f6e56] text-sm">
                   ✓ 매장 등록 요청이 접수되었습니다. 검토 후 연락드리겠습니다.
                 </p>
               )}
@@ -203,17 +211,20 @@ export default function OnboardingPage() {
           )}
 
           {results.length > 0 && (
-            <ul style={styles.resultList}>
+            <ul className="mt-4 flex flex-col gap-2">
               {results.map((s) => (
-                <li key={s.store_id} style={styles.resultItem}>
+                <li
+                  key={s.store_id}
+                  className="flex justify-between items-center p-4 border border-[#e5e5e0] rounded-xl bg-white"
+                >
                   <div>
-                    <strong>{s.store_name}</strong>
-                    <p style={styles.resultAddr}>{s.address}</p>
+                    <p className="font-semibold text-sm text-[#2c2c2a]">{s.store_name}</p>
+                    <p className="text-xs text-[#888780] mt-0.5">{s.address}</p>
                   </div>
                   <button
                     onClick={() => handleSelectStore(s)}
                     disabled={loading}
-                    style={styles.selectBtn}
+                    className="bg-[#0f6e56] text-white text-[13px] font-medium rounded-lg px-4 py-2 cursor-pointer whitespace-nowrap disabled:opacity-60"
                   >
                     선택
                   </button>
@@ -228,117 +239,44 @@ export default function OnboardingPage() {
 
   // ─── Step: QR ─────────────────────────────────────────────
   return (
-    <main style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>QR 코드 발급</h1>
-        {storeName && <p style={styles.subtitle}>{storeName}</p>}
-
-        <div style={styles.steps}>
-          <div style={styles.stepDone}>✓ 매장 연결 완료</div>
-          <div style={styles.stepActive}>QR 발급 · 다운로드</div>
-          <div style={styles.stepNext}>
-            <Link href="/a9" style={{ color: '#aaa', textDecoration: 'none' }}>
-              발송 설정 (다음 단계)
-            </Link>
-          </div>
+    <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-4">
+      <div className="bg-white border border-[#e5e5e0] rounded-xl p-8 w-full max-w-[480px] shadow-sm">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">QR 코드 발급</h1>
+          {storeName && <p className="text-sm text-[#5f5e5a] mt-1">{storeName}</p>}
         </div>
 
-        <button onClick={handleQrDownload} style={{ ...styles.button, marginTop: 24 }}>
-          QR PDF 다운로드
-        </button>
+        {/* Step progress */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-7 h-7 rounded-full bg-[#0f6e56] flex items-center justify-center text-white text-xs font-semibold">✓</div>
+          <div className="h-0.5 w-12 bg-[#9fe1cb]" />
+          <div className="w-7 h-7 rounded-full bg-[#ef9f27] flex items-center justify-center text-[#633806] text-xs font-semibold">2</div>
+          <div className="h-0.5 w-12 bg-[#e5e5e0]" />
+          <div className="w-7 h-7 rounded-full border border-[#e5e5e0] flex items-center justify-center text-[#888780] text-xs font-semibold">3</div>
+        </div>
 
-        {error && <p style={styles.error}>{error}</p>}
+        <div className="flex flex-col gap-3">
+          <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-xl p-4">
+            <p className="text-sm font-semibold text-[#085041]">✓ 매장 연결 완료</p>
+          </div>
+          <button onClick={handleQrDownload} className={btnPrimary}>
+            QR PDF 다운로드
+          </button>
+        </div>
 
-        <button
-          onClick={() => router.push('/')}
-          style={{ ...styles.buttonOutline, marginTop: 12 }}
-        >
-          대시보드로 이동
-        </button>
+        {error && <p className="text-[#d32f2f] text-xs mt-3">{error}</p>}
+
+        <div className="mt-3 flex flex-col gap-2">
+          <button onClick={() => router.push('/')} className={btnOutline}>
+            대시보드로 이동
+          </button>
+          <p className="text-center text-xs text-[#888780]">
+            <Link href="/send-setup" className="text-[#0f6e56] font-medium">
+              발송 설정하기 (다음 단계) →
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f5f5f5',
-    padding: '1rem',
-  },
-  card: {
-    background: '#fff',
-    borderRadius: 12,
-    padding: '2.5rem 2rem',
-    width: '100%',
-    maxWidth: 440,
-    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
-  },
-  title: { margin: 0, fontSize: 24, color: '#12787A' },
-  subtitle: { marginTop: 4, marginBottom: 20, color: '#555', fontSize: 14 },
-  form: { display: 'flex', flexDirection: 'column', gap: 10 },
-  input: {
-    padding: '0.75rem 1rem',
-    borderRadius: 8,
-    border: '1px solid #ddd',
-    fontSize: 15,
-    outline: 'none',
-  },
-  button: {
-    padding: '0.85rem',
-    borderRadius: 8,
-    border: 'none',
-    background: '#12787A',
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: 'pointer',
-    width: '100%',
-  },
-  buttonOutline: {
-    padding: '0.75rem',
-    borderRadius: 8,
-    border: '1px solid #12787A',
-    background: 'transparent',
-    color: '#12787A',
-    fontSize: 14,
-    cursor: 'pointer',
-    width: '100%',
-  },
-  error: { color: '#d32f2f', fontSize: 13, marginTop: 8 },
-  emptyBox: {
-    marginTop: 16,
-    padding: '1rem',
-    borderRadius: 8,
-    background: '#fafafa',
-    border: '1px dashed #ddd',
-  },
-  emptyText: { fontSize: 14, color: '#555', margin: '0 0 12px' },
-  resultList: { listStyle: 'none', padding: 0, margin: '16px 0 0', display: 'flex', flexDirection: 'column', gap: 8 },
-  resultItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 1rem',
-    borderRadius: 8,
-    border: '1px solid #e0e0e0',
-  },
-  resultAddr: { margin: '2px 0 0', fontSize: 12, color: '#777' },
-  selectBtn: {
-    padding: '0.4rem 1rem',
-    borderRadius: 6,
-    border: 'none',
-    background: '#12787A',
-    color: '#fff',
-    fontSize: 13,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  },
-  steps: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 },
-  stepDone: { fontSize: 14, color: '#12787A', fontWeight: 600 },
-  stepActive: { fontSize: 15, color: '#111', fontWeight: 700 },
-  stepNext: { fontSize: 13, color: '#aaa' },
-};

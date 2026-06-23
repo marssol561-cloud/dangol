@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import AppHeader from "@/app/components/AppHeader";
 
 interface StampsPolicy {
   required_count: number;
@@ -17,6 +19,9 @@ const DEFAULT: StampsPolicy = {
   service_b: null,
   service_c: null,
 };
+
+const inputCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full";
+const labelCls = "text-xs font-medium text-[#5f5e5a]";
 
 export default function StampsPage() {
   const [policy, setPolicy] = useState<StampsPolicy>(DEFAULT);
@@ -59,88 +64,96 @@ export default function StampsPage() {
     }
   }
 
-  if (loading) return <main style={s.page}><p style={s.muted}>불러오는 중...</p></main>;
-
   return (
-    <main style={s.page}>
-      <h1 style={s.title}>스탬프 정책 설정</h1>
-      <form onSubmit={handleSave} style={s.form}>
-        <label style={s.label}>
-          리워드 기준 스탬프 수
-          <input
-            style={s.input}
-            type="number"
-            min={1}
-            max={100}
-            value={policy.required_count}
-            onChange={(e) => setPolicy({ ...policy, required_count: Number(e.target.value) })}
-            required
-          />
-        </label>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="owner" activeItem="스탬프·쿠폰" />
 
-        <label style={s.label}>
-          리워드 설명
-          <input
-            style={s.input}
-            type="text"
-            placeholder="예: 아메리카노 1잔 무료"
-            value={policy.reward_desc ?? ""}
-            onChange={(e) => setPolicy({ ...policy, reward_desc: e.target.value || null })}
-          />
-        </label>
+      <main className="flex-1 p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/" className="text-[#888780] text-sm">← 홈</Link>
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">스탬프·쿠폰 설정</h1>
+        </div>
 
-        <label style={s.label}>
-          첫 방문 쿠폰 혜택 (A)
-          <input
-            style={s.input}
-            type="text"
-            placeholder="예: 첫 방문 10% 할인"
-            value={policy.service_a ?? ""}
-            onChange={(e) => setPolicy({ ...policy, service_a: e.target.value || null })}
-          />
-        </label>
+        {loading ? (
+          <p className="text-sm text-[#888780]">불러오는 중...</p>
+        ) : (
+          <div className="max-w-[560px]">
+            <form onSubmit={handleSave} className="bg-white border border-[#e5e5e0] rounded-xl p-6 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>리워드 기준 스탬프 수</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={policy.required_count}
+                  onChange={(e) => setPolicy({ ...policy, required_count: Number(e.target.value) })}
+                  required
+                  className={inputCls}
+                />
+              </div>
 
-        <label style={s.label}>
-          재방문 쿠폰 혜택 (B)
-          <input
-            style={s.input}
-            type="text"
-            placeholder="예: 재방문 음료 1+1"
-            value={policy.service_b ?? ""}
-            onChange={(e) => setPolicy({ ...policy, service_b: e.target.value || null })}
-          />
-        </label>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>리워드 설명</label>
+                <input
+                  type="text"
+                  placeholder="예: 아메리카노 1잔 무료"
+                  value={policy.reward_desc ?? ""}
+                  onChange={(e) => setPolicy({ ...policy, reward_desc: e.target.value || null })}
+                  className={inputCls}
+                />
+              </div>
 
-        <label style={s.label}>
-          친구 추천 쿠폰 혜택 (C)
-          <input
-            style={s.input}
-            type="text"
-            placeholder="예: 친구 추천 500원 할인"
-            value={policy.service_c ?? ""}
-            onChange={(e) => setPolicy({ ...policy, service_c: e.target.value || null })}
-          />
-        </label>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>첫 방문 쿠폰 혜택 (A)</label>
+                <input
+                  type="text"
+                  placeholder="예: 첫 방문 10% 할인"
+                  value={policy.service_a ?? ""}
+                  onChange={(e) => setPolicy({ ...policy, service_a: e.target.value || null })}
+                  className={inputCls}
+                />
+              </div>
 
-        {error && <p style={s.error}>{error}</p>}
-        {saved && <p style={s.success}>저장되었습니다.</p>}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>재방문 쿠폰 혜택 (B)</label>
+                <input
+                  type="text"
+                  placeholder="예: 재방문 음료 1+1"
+                  value={policy.service_b ?? ""}
+                  onChange={(e) => setPolicy({ ...policy, service_b: e.target.value || null })}
+                  className={inputCls}
+                />
+              </div>
 
-        <button type="submit" style={{ ...s.btn, opacity: saving ? 0.6 : 1 }} disabled={saving}>
-          {saving ? "저장 중..." : "저장"}
-        </button>
-      </form>
-    </main>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>친구 추천 쿠폰 혜택 (C)</label>
+                <input
+                  type="text"
+                  placeholder="예: 친구 추천 500원 할인"
+                  value={policy.service_c ?? ""}
+                  onChange={(e) => setPolicy({ ...policy, service_c: e.target.value || null })}
+                  className={inputCls}
+                />
+              </div>
+
+              {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+              {saved && (
+                <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-xl px-4 py-3">
+                  <p className="text-sm font-semibold text-[#085041]">✓ 저장되었습니다.</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60"
+              >
+                {saving ? "저장 중..." : "저장"}
+              </button>
+            </form>
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
-
-const s: Record<string, React.CSSProperties> = {
-  page: { maxWidth: 480, margin: "0 auto", padding: "40px 24px", fontFamily: "sans-serif", display: "flex", flexDirection: "column", gap: 20 },
-  title: { fontSize: 22, fontWeight: 700, margin: 0 },
-  form: { display: "flex", flexDirection: "column", gap: 16 },
-  label: { display: "flex", flexDirection: "column", gap: 6, fontSize: 14, fontWeight: 600 },
-  input: { padding: "10px 12px", borderRadius: 8, border: "1.5px solid #ddd", fontSize: 15, boxSizing: "border-box" as const },
-  btn: { padding: "14px 0", borderRadius: 10, border: "none", background: "#008080", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer" },
-  muted: { color: "#666", fontSize: 14, margin: 0 },
-  error: { color: "#c00", fontSize: 14, margin: 0 },
-  success: { color: "#008000", fontSize: 14, margin: 0 },
-};

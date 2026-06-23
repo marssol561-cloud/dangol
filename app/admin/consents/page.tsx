@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
 import Link from "next/link";
+import AppHeader from "@/app/components/AppHeader";
 
 const CONSENT_LABELS: Record<string, string> = {
   required: "필수 동의",
@@ -24,7 +25,6 @@ export default async function AdminConsentsPage() {
 
   const rows = (consents ?? []) as { type: string; agreed: boolean; revoked_at: string | null }[];
 
-  // Aggregate per type
   const stats: Record<string, { agreed: number; declined: number; revoked: number }> = {};
   for (const r of rows) {
     if (!stats[r.type]) stats[r.type] = { agreed: 0, declined: 0, revoked: 0 };
@@ -36,50 +36,52 @@ export default async function AdminConsentsPage() {
   const types = ["required", "thirdparty", "ad_sms", "ad_kakao", "ad_email"];
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center gap-4">
-        <Link href="/admin" className="text-gray-400 text-sm">← 대시보드</Link>
-        <h1 className="text-lg font-bold text-gray-900">C5 동의 / 법무</h1>
-      </header>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="admin" activeItem="동의·법무" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="space-y-3">
+      <main className="flex-1 p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/admin" className="text-[#888780] text-sm">← 대시보드</Link>
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">동의 / 법무</h1>
+        </div>
+
+        <div className="max-w-3xl flex flex-col gap-3">
           {types.map((t) => {
             const s = stats[t] ?? { agreed: 0, declined: 0, revoked: 0 };
             const total = s.agreed + s.declined + s.revoked;
             const rate = total > 0 ? Math.round((s.agreed / total) * 100) : 0;
             return (
-              <div key={t} className="bg-white rounded-2xl shadow-sm px-5 py-4">
+              <div key={t} className="bg-white border border-[#e5e5e0] rounded-xl px-5 py-4">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-gray-800">{CONSENT_LABELS[t] ?? t}</p>
-                  <span className="text-xs text-gray-500">{rate}% 동의</span>
+                  <p className="font-medium text-[#2c2c2a]">{CONSENT_LABELS[t] ?? t}</p>
+                  <span className="text-xs text-[#888780]">{rate}% 동의</span>
                 </div>
                 <div className="flex gap-6">
                   <div>
-                    <p className="text-xs text-gray-400">동의</p>
-                    <p className="text-lg font-bold text-teal-600">{s.agreed}</p>
+                    <p className="text-xs text-[#888780]">동의</p>
+                    <p className="text-lg font-bold text-[#085041]">{s.agreed}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">미동의</p>
-                    <p className="text-lg font-bold text-gray-400">{s.declined}</p>
+                    <p className="text-xs text-[#888780]">미동의</p>
+                    <p className="text-lg font-bold text-[#888780]">{s.declined}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">철회</p>
-                    <p className="text-lg font-bold text-red-400">{s.revoked}</p>
+                    <p className="text-xs text-[#888780]">철회</p>
+                    <p className="text-lg font-bold text-[#d32f2f]">{s.revoked}</p>
                   </div>
                 </div>
               </div>
             );
           })}
-        </div>
 
-        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
-          <p className="text-sm font-medium text-amber-800">동의 텍스트 버전</p>
-          <p className="text-xs text-amber-600 mt-1">
-            현재 버전: v1.0 (SP-3 기준). 텍스트 변경 시 개인정보보호책임자 검토 필요.
-          </p>
+          <div className="bg-[#faeeda] border border-[#ef9f27] rounded-xl px-5 py-4">
+            <p className="text-sm font-medium text-[#633806]">동의 텍스트 버전</p>
+            <p className="text-xs text-[#633806] mt-1">
+              현재 버전: v1.0 (SP-3 기준). 텍스트 변경 시 개인정보보호책임자 검토 필요.
+            </p>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

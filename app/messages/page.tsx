@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+import AppHeader from "@/app/components/AppHeader";
 
 type Segment = "grade_vip" | "grade_regular" | "grade_normal" | "churn" | "anniversary";
 type TemplateId = "coupon_issued" | "stamp_reward" | "returning_reminder" | "churn_reengage" | "anniversary";
@@ -30,6 +31,8 @@ function parseSegmentParam(s: string | null): { segment: Segment | null; segment
   if (s === "anniversary") return { segment: "anniversary", segmentType: "anniversary" };
   return { segment: null, segmentType: "grade" };
 }
+
+const selectCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] outline-none focus:border-[#0f6e56] transition-colors w-full";
 
 function MessagesPageInner() {
   const searchParams = useSearchParams();
@@ -87,74 +90,66 @@ function MessagesPageInner() {
   }
 
   return (
-    <main style={{ maxWidth: 600, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>메시지 발송</h1>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="owner" activeItem="소식 보내기" />
 
-      <section style={{ marginBottom: 20 }}>
-        <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>고객 세그먼트</label>
-        <select
-          value={segment}
-          onChange={(e) => setSegment(e.target.value as Segment)}
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc" }}
-        >
-          <option value="">-- 선택 --</option>
-          {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-      </section>
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">소식 보내기</h1>
 
-      <section style={{ marginBottom: 20 }}>
-        <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>메시지 템플릿</label>
-        <select
-          value={templateId}
-          onChange={(e) => setTemplateId(e.target.value as TemplateId)}
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc" }}
-        >
-          <option value="">-- 선택 --</option>
-          {TEMPLATES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
-      </section>
+        <div className="max-w-[560px] flex flex-col gap-4">
+          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#5f5e5a]">고객 세그먼트</label>
+              <select
+                value={segment}
+                onChange={(e) => setSegment(e.target.value as Segment)}
+                className={selectCls}
+              >
+                <option value="">-- 선택 --</option>
+                {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
 
-      <div style={{ padding: "12px 16px", background: "#f0f7ff", borderRadius: 6, marginBottom: 20, fontSize: 13, color: "#555" }}>
-        * 광고 수신 동의 고객에게만 발송됩니다. 21:00–08:00 KST 야간 발송은 차단됩니다.
-      </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#5f5e5a]">메시지 템플릿</label>
+              <select
+                value={templateId}
+                onChange={(e) => setTemplateId(e.target.value as TemplateId)}
+                className={selectCls}
+              >
+                <option value="">-- 선택 --</option>
+                {TEMPLATES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
 
-      <button
-        onClick={handleSend}
-        disabled={sending || !segment || !templateId}
-        style={{
-          background: sending ? "#aaa" : "#2563eb",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          padding: "12px 24px",
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: sending ? "not-allowed" : "pointer",
-          width: "100%",
-        }}
-      >
-        {sending ? "발송 중..." : "메시지 발송"}
-      </button>
+            <div className="bg-[#f8f7f4] border border-[#e5e5e0] rounded-lg px-4 py-3 text-xs text-[#888780]">
+              * 광고 수신 동의 고객에게만 발송됩니다. 21:00–08:00 KST 야간 발송은 차단됩니다.
+            </div>
 
-      {result && (
-        <div style={{
-          marginTop: 20,
-          padding: "16px",
-          background: result.error ? "#fff0f0" : "#f0fff4",
-          borderRadius: 8,
-          border: `1px solid ${result.error ? "#f99" : "#86efac"}`,
-        }}>
-          {result.error ? (
-            <p style={{ color: "#c00", margin: 0 }}>오류: {result.error}</p>
-          ) : (
-            <>
-              <p style={{ margin: "0 0 4px", fontWeight: 600 }}>발송 완료</p>
-              <p style={{ margin: 0, fontSize: 14 }}>성공 {result.sent ?? 0}건 / 실패 {result.failed ?? 0}건 / 건너뜀 {result.skipped ?? 0}건</p>
-            </>
+            <button
+              onClick={handleSend}
+              disabled={sending || !segment || !templateId}
+              className="bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-40"
+            >
+              {sending ? "발송 중..." : "메시지 발송"}
+            </button>
+          </div>
+
+          {result && (
+            <div className={`rounded-xl px-5 py-4 border ${result.error ? "bg-[#fff0f0] border-[#d32f2f]" : "bg-[#e1f5ee] border-[#9fe1cb]"}`}>
+              {result.error ? (
+                <p className="text-sm text-[#d32f2f]">오류: {result.error}</p>
+              ) : (
+                <>
+                  <p className="font-semibold text-sm text-[#085041]">발송 완료</p>
+                  <p className="text-sm text-[#085041] mt-1">성공 {result.sent ?? 0}건 / 실패 {result.failed ?? 0}건 / 건너뜀 {result.skipped ?? 0}건</p>
+                </>
+              )}
+            </div>
           )}
         </div>
-      )}
-    </main>
+      </main>
+    </div>
   );
 }
 

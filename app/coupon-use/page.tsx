@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import AppHeader from "@/app/components/AppHeader";
 
 type Result = { valid: true } | { valid: false; reason: string } | null;
 
@@ -38,61 +40,60 @@ export default function CouponUsePage() {
   }
 
   return (
-    <main style={s.page}>
-      <h1 style={s.title}>쿠폰 사용 처리</h1>
-      <p style={s.muted}>고객의 쿠폰 코드를 입력하고 확인하세요.</p>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="owner" activeItem="스탬프·쿠폰" />
 
-      <form onSubmit={handleSubmit} style={s.form}>
-        <input
-          style={s.input}
-          type="text"
-          placeholder="쿠폰 코드 (예: ABC12345)"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          autoCapitalize="characters"
-          maxLength={20}
-          required
-        />
-        <button
-          type="submit"
-          style={{ ...s.btn, opacity: submitting ? 0.6 : 1 }}
-          disabled={submitting}
-        >
-          {submitting ? "확인 중..." : "쿠폰 확인"}
-        </button>
-      </form>
-
-      {result !== null && (
-        <div style={{ ...s.resultBox, ...(result.valid ? s.resultOk : s.resultFail) }}>
-          {result.valid ? (
-            <>
-              <p style={s.resultTitle}>✅ 쿠폰 사용 완료</p>
-              <p style={s.muted}>정상 처리되었습니다.</p>
-            </>
-          ) : (
-            <>
-              <p style={s.resultTitle}>❌ 사용 불가</p>
-              <p style={s.muted}>
-                {REASON_MSG[(result as { valid: false; reason: string }).reason] ??
-                  (result as { valid: false; reason: string }).reason}
-              </p>
-            </>
-          )}
+      <main className="flex-1 p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/" className="text-[#888780] text-sm">← 홈</Link>
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">쿠폰 사용 처리</h1>
         </div>
-      )}
-    </main>
+
+        <div className="max-w-[480px]">
+          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 flex flex-col gap-4">
+            <p className="text-sm text-[#5f5e5a]">고객의 쿠폰 코드를 입력하고 확인하세요.</p>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder="쿠폰 코드 (예: ABC12345)"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                autoCapitalize="characters"
+                maxLength={20}
+                required
+                className="bg-white border border-[#e5e5e0] rounded-lg px-4 py-3.5 text-[18px] font-mono tracking-widest text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full uppercase"
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60"
+              >
+                {submitting ? "확인 중..." : "쿠폰 확인"}
+              </button>
+            </form>
+
+            {result !== null && (
+              <div className={`rounded-xl p-5 flex flex-col gap-2 ${result.valid ? "bg-[#e1f5ee] border border-[#9fe1cb]" : "bg-[#fff0f0] border-2 border-[#d32f2f]"}`}>
+                {result.valid ? (
+                  <>
+                    <p className="text-lg font-bold text-[#085041]">✅ 쿠폰 사용 완료</p>
+                    <p className="text-sm text-[#085041]">정상 처리되었습니다.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-lg font-bold text-[#d32f2f]">❌ 사용 불가</p>
+                    <p className="text-sm text-[#5f5e5a]">
+                      {REASON_MSG[(result as { valid: false; reason: string }).reason] ??
+                        (result as { valid: false; reason: string }).reason}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
-
-const s: Record<string, React.CSSProperties> = {
-  page: { maxWidth: 480, margin: "0 auto", padding: "40px 24px", fontFamily: "sans-serif", display: "flex", flexDirection: "column", gap: 20 },
-  title: { fontSize: 22, fontWeight: 700, margin: 0 },
-  form: { display: "flex", flexDirection: "column", gap: 12 },
-  input: { padding: "14px 16px", borderRadius: 10, border: "1.5px solid #ddd", fontSize: 18, letterSpacing: 3, textTransform: "uppercase", boxSizing: "border-box" as const },
-  btn: { padding: "14px 0", borderRadius: 10, border: "none", background: "#008080", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer" },
-  muted: { color: "#666", fontSize: 14, margin: 0 },
-  resultBox: { borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", gap: 8 },
-  resultOk: { background: "#e6f7e6", border: "2px solid #008000" },
-  resultFail: { background: "#fff0f0", border: "2px solid #c00" },
-  resultTitle: { fontSize: 18, fontWeight: 700, margin: 0 },
-};

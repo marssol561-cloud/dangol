@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getOwnerContext } from "@/lib/ownerAuth";
 import { monthlyStats, consentRate, messageEffect, todayCards, type TodayCard } from "@/lib/dashboard";
 import { getServerClient } from "@/lib/dangolDb";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function OwnerDashboardPage() {
   const ctx = await getOwnerContext();
@@ -30,124 +31,125 @@ export default async function OwnerDashboardPage() {
   const isEmpty = monthly.newCustomers === 0 && monthly.cumulativeRegulars === 0;
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-10">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">리붐단골</h1>
-        <Link href="/settings" className="text-sm text-gray-500">설정</Link>
-      </header>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="owner" activeItem="대시보드" />
 
-      <div className="max-w-xl mx-auto px-4 pt-6 space-y-5">
+      <main className="flex-1 p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">대시보드</h1>
+        </div>
+
         {isEmpty ? (
           <EmptyState storeLinkId={ctx.storeLinkId} />
         ) : (
-          <>
-            {/* Monthly stats */}
-            <section className="bg-white rounded-2xl p-5 shadow-sm">
-              <p className="text-xs text-gray-400 mb-3">이번 달</p>
-              <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="flex flex-col gap-6">
+            {/* Monthly stats card */}
+            <div className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+              <p className="text-xs text-[#888780] mb-4">이번 달</p>
+              <div className="grid grid-cols-3 gap-4 text-center">
                 <Link href="/customers?filter=new" className="group">
-                  <p className="text-3xl font-bold text-teal-600">{monthly.newCustomers}</p>
-                  <p className="text-xs text-gray-500 mt-1">신규</p>
+                  <p className="text-3xl font-bold text-[#0f6e56]">{monthly.newCustomers}</p>
+                  <p className="text-xs text-[#5f5e5a] mt-1">신규</p>
                 </Link>
                 <Link href="/customers?filter=returning" className="group">
-                  <p className="text-3xl font-bold text-teal-600">{monthly.returningVisits}</p>
-                  <p className="text-xs text-gray-500 mt-1">재방문</p>
+                  <p className="text-3xl font-bold text-[#0f6e56]">{monthly.returningVisits}</p>
+                  <p className="text-xs text-[#5f5e5a] mt-1">재방문</p>
                 </Link>
                 <div>
-                  <p className="text-3xl font-bold text-teal-600">
+                  <p className="text-3xl font-bold text-[#0f6e56]">
                     {Math.round(monthly.returnRate * 100)}%
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">재방문율</p>
+                  <p className="text-xs text-[#5f5e5a] mt-1">재방문율</p>
                 </div>
               </div>
-            </section>
+            </div>
 
-            {/* Cumulative + consent */}
-            <section className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="grid grid-cols-2 gap-4">
+            {/* Cumulative + consent card */}
+            <div className="bg-white border border-[#e5e5e0] rounded-xl p-6">
+              <div className="grid grid-cols-2 gap-6">
                 <Link href="/customers" className="block">
-                  <p className="text-xs text-gray-400">누적 단골 이상</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-xs text-[#888780]">누적 단골 이상</p>
+                  <p className="text-2xl font-bold text-[#2c2c2a] mt-1">
                     {monthly.cumulativeRegulars}
-                    <span className="text-sm font-normal text-gray-500 ml-1">명</span>
+                    <span className="text-sm font-normal text-[#5f5e5a] ml-1">명</span>
                   </p>
                 </Link>
                 <div>
-                  <p className="text-xs text-gray-400">광고 동의율</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-xs text-[#888780]">광고 동의율</p>
+                  <p className="text-2xl font-bold text-[#2c2c2a] mt-1">
                     {Math.round(consent.rate * 100)}%
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-[#888780] mt-0.5">
                     {consent.consented}/{consent.total}명
                   </p>
                 </div>
               </div>
-            </section>
+            </div>
 
-            {/* Message effect */}
+            {/* Message effect banner */}
             {effect.revisitCount > 0 && (
-              <div className="bg-teal-50 rounded-2xl px-5 py-3 flex items-center gap-2">
+              <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-xl px-5 py-3 flex items-center gap-2">
                 <span className="text-lg">📨</span>
-                <p className="text-sm text-teal-700">
+                <p className="text-sm text-[#085041]">
                   소식 받고 다시 온 단골{" "}
-                  <strong className="text-teal-800">{effect.revisitCount}명</strong>
+                  <strong className="font-bold">{effect.revisitCount}명</strong>
                 </p>
               </div>
             )}
 
-            {/* Today cards */}
+            {/* Today action cards */}
             {cards.some((c) => c.count > 0) && (
-              <section>
-                <p className="text-xs text-gray-400 mb-2 px-1">오늘 액션</p>
-                <div className="space-y-2">
+              <div>
+                <p className="text-xs text-[#888780] mb-3">오늘 액션</p>
+                <div className="flex flex-col gap-2">
                   {cards.filter((c) => c.count > 0).map((card: TodayCard) => (
                     <Link
                       key={card.segment}
                       href={`/messages?segment=${card.segment}`}
-                      className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 shadow-sm"
+                      className="flex items-center justify-between bg-white border border-[#e5e5e0] rounded-xl px-5 py-4"
                     >
-                      <span className="text-sm text-gray-700">{card.label}</span>
-                      <span className="text-teal-600 font-semibold text-sm">
+                      <span className="text-sm text-[#2c2c2a]">{card.label}</span>
+                      <span className="text-[#0f6e56] font-semibold text-sm">
                         {card.count}명 →
                       </span>
                     </Link>
                   ))}
                 </div>
-              </section>
+              </div>
             )}
-          </>
+          </div>
         )}
 
         {/* Send channel status */}
-        <div className="text-center pt-2">
+        <div className="text-center mt-6">
           {sendChannel.connected ? (
-            <p className="text-xs text-gray-400">✓ 소식 발송 연결됨</p>
+            <p className="text-xs text-[#888780]">✓ 소식 발송 연결됨</p>
           ) : (
-            <Link href="/send-setup" className="text-xs text-amber-500 underline">
+            <Link href="/send-setup" className="text-xs text-[#ef9f27] underline">
               소식 발송 설정하기 ({sendChannel.setup_step}/4단계 완료)
             </Link>
           )}
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
 function EmptyState({ storeLinkId }: { storeLinkId: string }) {
   void storeLinkId;
   return (
-    <div className="bg-white rounded-2xl p-10 text-center shadow-sm">
+    <div className="bg-white border border-[#e5e5e0] rounded-xl p-10 text-center">
       <p className="text-4xl mb-4">🏪</p>
-      <p className="text-lg font-semibold text-gray-700 mb-2">첫 손님을 받아보세요</p>
-      <p className="text-sm text-gray-400 mb-6">QR 코드를 출력해 카운터에 붙여두세요</p>
+      <p className="text-lg font-semibold text-[#2c2c2a] mb-2">첫 손님을 받아보세요</p>
+      <p className="text-sm text-[#888780] mb-6">QR 코드를 출력해 카운터에 붙여두세요</p>
       <Link
         href="/api/qr"
-        className="inline-block bg-teal-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium"
+        className="inline-block bg-[#0f6e56] text-white px-6 py-3 rounded-lg text-sm font-semibold"
       >
         QR PDF 다운로드
       </Link>
       <p className="mt-4">
-        <Link href="/settings" className="text-xs text-gray-400 underline">
+        <Link href="/settings" className="text-xs text-[#888780] underline">
           매장 설정
         </Link>
       </p>

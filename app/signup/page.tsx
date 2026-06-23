@@ -61,81 +61,104 @@ export default function SignupPage() {
   }
 
   return (
-    <main style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>리붐단골</h1>
-        <p style={styles.subtitle}>점주 회원가입</p>
+    <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-4">
+      <div className="bg-white border border-[#e5e5e0] rounded-xl p-8 w-full max-w-[440px] shadow-sm">
+        <div className="text-center mb-6">
+          <h1 className="text-[28px] font-bold text-[#0f6e56] leading-tight">리붐단골</h1>
+          <p className="mt-1 text-sm text-[#5f5e5a]">점주 회원가입</p>
+        </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="text"
-            placeholder="이름"
-            value={form.name}
-            onChange={(e) => update('name', e.target.value)}
-            required
-            style={styles.input}
-          />
-          <input
-            type="email"
-            placeholder="이메일"
-            value={form.email}
-            onChange={(e) => update('email', e.target.value)}
-            required
-            style={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="비밀번호 (6자 이상)"
-            value={form.password}
-            onChange={(e) => update('password', e.target.value)}
-            required
-            minLength={6}
-            style={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="비밀번호 확인"
-            value={form.passwordConfirm}
-            onChange={(e) => update('passwordConfirm', e.target.value)}
-            required
-            style={styles.input}
-          />
-
-          <label style={styles.checkLabel}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#5f5e5a]">이름</label>
             <input
-              type="checkbox"
-              checked={form.termsAgreed}
-              onChange={(e) => update('termsAgreed', e.target.checked)}
+              type="text"
+              placeholder="이름"
+              value={form.name}
+              onChange={(e) => update('name', e.target.value)}
+              required
+              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
             />
-            <span>[필수] 이용약관 동의</span>
-          </label>
-          <label style={styles.checkLabel}>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#5f5e5a]">이메일</label>
             <input
-              type="checkbox"
-              checked={form.privacyAgreed}
-              onChange={(e) => update('privacyAgreed', e.target.checked)}
+              type="email"
+              placeholder="이메일"
+              value={form.email}
+              onChange={(e) => update('email', e.target.value)}
+              required
+              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
             />
-            <span>[필수] 개인정보 처리방침 동의</span>
-          </label>
-          <label style={styles.checkLabel}>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#5f5e5a]">비밀번호 (6자 이상)</label>
             <input
-              type="checkbox"
-              checked={form.marketingConsent}
-              onChange={(e) => update('marketingConsent', e.target.checked)}
+              type="password"
+              placeholder="비밀번호"
+              value={form.password}
+              onChange={(e) => update('password', e.target.value)}
+              required
+              minLength={6}
+              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
             />
-            <span>[선택] 마케팅 정보 수신 동의</span>
-          </label>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#5f5e5a]">비밀번호 확인</label>
+            <input
+              type="password"
+              placeholder="비밀번호 확인"
+              value={form.passwordConfirm}
+              onChange={(e) => update('passwordConfirm', e.target.value)}
+              required
+              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
+            />
+          </div>
 
-          {error && <p style={styles.error}>{error}</p>}
+          <div className="flex flex-col gap-2 mt-1">
+            <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.termsAgreed}
+                onChange={(e) => update('termsAgreed', e.target.checked)}
+                className="accent-[#0f6e56]"
+              />
+              [필수] 이용약관 동의
+            </label>
+            <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.privacyAgreed}
+                onChange={(e) => update('privacyAgreed', e.target.checked)}
+                className="accent-[#0f6e56]"
+              />
+              [필수] 개인정보 처리방침 동의
+            </label>
+            <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.marketingConsent}
+                onChange={(e) => update('marketingConsent', e.target.checked)}
+                className="accent-[#0f6e56]"
+              />
+              [선택] 마케팅 정보 수신 동의
+            </label>
+          </div>
 
-          <button type="submit" disabled={loading} style={styles.button}>
+          {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60"
+          >
             {loading ? '가입 중...' : '회원가입'}
           </button>
         </form>
 
-        <div style={styles.links}>
+        <div className="mt-5 flex justify-center items-center gap-2 text-[13px] text-[#5f5e5a]">
           <span>이미 계정이 있으신가요?</span>
-          <Link href="/login" style={styles.link}>
+          <Link href="/login" className="text-[#0f6e56] font-semibold">
             로그인
           </Link>
         </div>
@@ -143,47 +166,3 @@ export default function SignupPage() {
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f5f5f5',
-    padding: '1rem',
-  },
-  card: {
-    background: '#fff',
-    borderRadius: 12,
-    padding: '2.5rem 2rem',
-    width: '100%',
-    maxWidth: 400,
-    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
-  },
-  title: { margin: 0, fontSize: 28, color: '#12787A', textAlign: 'center' },
-  subtitle: { marginTop: 4, marginBottom: 24, color: '#555', textAlign: 'center', fontSize: 14 },
-  form: { display: 'flex', flexDirection: 'column', gap: 12 },
-  input: {
-    padding: '0.75rem 1rem',
-    borderRadius: 8,
-    border: '1px solid #ddd',
-    fontSize: 15,
-    outline: 'none',
-  },
-  checkLabel: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' },
-  button: {
-    marginTop: 8,
-    padding: '0.85rem',
-    borderRadius: 8,
-    border: 'none',
-    background: '#12787A',
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  error: { color: '#d32f2f', fontSize: 13, margin: 0 },
-  links: { marginTop: 20, display: 'flex', justifyContent: 'center', gap: 8, fontSize: 13, color: '#555' },
-  link: { color: '#12787A', textDecoration: 'none', fontWeight: 600 },
-};
