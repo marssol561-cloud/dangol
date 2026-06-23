@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUpOwner } from '@/lib/auth';
 import AppHeader from '@/app/components/AppHeader';
+import Card from '@/app/components/ui/Card';
+import FormField from '@/app/components/ui/FormField';
+import Input from '@/app/components/ui/Input';
+import PrimaryButton from '@/app/components/ui/PrimaryButton';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -64,106 +68,97 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
       <AppHeader variant="auth" />
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-12">
-      <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 w-full max-w-[440px]">
-        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-4">점주 회원가입</h1>
+      <div className="flex flex-col items-center p-[48px] w-full">
+        <Card>
+          <p className="text-[24px] font-semibold text-[#2c2c2a]">점주 회원가입</p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#5f5e5a]">이름</label>
-            <input
-              type="text"
-              placeholder="이름"
-              value={form.name}
-              onChange={(e) => update('name', e.target.value)}
-              required
-              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#5f5e5a]">이메일</label>
-            <input
-              type="email"
-              placeholder="이메일"
-              value={form.email}
-              onChange={(e) => update('email', e.target.value)}
-              required
-              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#5f5e5a]">비밀번호 (6자 이상)</label>
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={form.password}
-              onChange={(e) => update('password', e.target.value)}
-              required
-              minLength={6}
-              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#5f5e5a]">비밀번호 확인</label>
-            <input
-              type="password"
-              placeholder="비밀번호 확인"
-              value={form.passwordConfirm}
-              onChange={(e) => update('passwordConfirm', e.target.value)}
-              required
-              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 mt-1">
-            <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.termsAgreed}
-                onChange={(e) => update('termsAgreed', e.target.checked)}
-                className="accent-[#0f6e56]"
+          <form onSubmit={handleSubmit} className="contents">
+            <FormField label="이름">
+              <Input
+                type="text"
+                placeholder="이름"
+                value={form.name}
+                onChange={(e) => update('name', e.target.value)}
+                required
               />
-              [필수] 이용약관 동의
-            </label>
-            <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.privacyAgreed}
-                onChange={(e) => update('privacyAgreed', e.target.checked)}
-                className="accent-[#0f6e56]"
+            </FormField>
+
+            <FormField label="이메일">
+              <Input
+                type="email"
+                placeholder="이메일"
+                value={form.email}
+                onChange={(e) => update('email', e.target.value)}
+                required
               />
-              [필수] 개인정보 처리방침 동의
-            </label>
-            <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.marketingConsent}
-                onChange={(e) => update('marketingConsent', e.target.checked)}
-                className="accent-[#0f6e56]"
+            </FormField>
+
+            <FormField label="비밀번호 (6자 이상)">
+              <Input
+                type="password"
+                placeholder="비밀번호"
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+                required
+                minLength={6}
               />
-              [선택] 마케팅 정보 수신 동의
-            </label>
+            </FormField>
+
+            <FormField label="비밀번호 확인">
+              <Input
+                type="password"
+                placeholder="비밀번호 확인"
+                value={form.passwordConfirm}
+                onChange={(e) => update('passwordConfirm', e.target.value)}
+                required
+              />
+            </FormField>
+
+            <div className="flex flex-col gap-[6px]">
+              <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.termsAgreed}
+                  onChange={(e) => update('termsAgreed', e.target.checked)}
+                  className="accent-[#0f6e56]"
+                />
+                [필수] 이용약관 동의
+              </label>
+              <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.privacyAgreed}
+                  onChange={(e) => update('privacyAgreed', e.target.checked)}
+                  className="accent-[#0f6e56]"
+                />
+                [필수] 개인정보 처리방침 동의
+              </label>
+              <label className="flex items-center gap-2 text-[13px] text-[#2c2c2a] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.marketingConsent}
+                  onChange={(e) => update('marketingConsent', e.target.checked)}
+                  className="accent-[#0f6e56]"
+                />
+                [선택] 마케팅 정보 수신 동의
+              </label>
+            </div>
+
+            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+
+            <PrimaryButton type="submit" disabled={loading}>
+              {loading ? '가입 중...' : '회원가입'}
+            </PrimaryButton>
+          </form>
+
+          <div className="flex items-center gap-[6px]">
+            <span className="text-[13px] text-[#5f5e5a]">이미 계정이 있으신가요?</span>
+            <Link href="/login" className="text-[13px] font-semibold text-[#0f6e56]">
+              로그인
+            </Link>
           </div>
-
-          {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60"
-          >
-            {loading ? '가입 중...' : '회원가입'}
-          </button>
-        </form>
-
-        <div className="mt-5 flex justify-center items-center gap-2 text-[13px] text-[#5f5e5a]">
-          <span>이미 계정이 있으신가요?</span>
-          <Link href="/login" className="text-[#0f6e56] font-semibold">
-            로그인
-          </Link>
-        </div>
+        </Card>
       </div>
-      </main>
     </div>
   );
 }

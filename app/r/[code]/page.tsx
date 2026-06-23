@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import Input from "@/app/components/ui/Input";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 type Step = "loading" | "b1" | "b2" | "b3" | "done" | "error";
 type Channel = "phone" | "kakao" | "email";
@@ -32,8 +34,6 @@ interface CheckInResult {
   coupon?: { id: string; code: string; benefit: string; expires_at: string };
 }
 
-const inputCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full";
-const btnPrimary = "bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-40";
 
 export default function CustomerPage() {
   const params = useParams<{ code: string }>();
@@ -292,13 +292,9 @@ export default function CustomerPage() {
               </button>
             ))}
           </div>
-          <button
-            disabled={!visitPurpose}
-            onClick={handleB1Next}
-            className={btnPrimary}
-          >
+          <PrimaryButton disabled={!visitPurpose} onClick={handleB1Next}>
             다음
-          </button>
+          </PrimaryButton>
         </div>
       </main>
     );
@@ -333,21 +329,19 @@ export default function CustomerPage() {
               ))}
             </div>
 
-            <input
+            <Input
               type={channel === "email" ? "email" : "text"}
               placeholder={CHANNEL_PLACEHOLDERS[channel]}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
-              className={inputCls}
             />
 
-            <input
+            <Input
               type="text"
               placeholder="이름 (선택)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={inputCls}
             />
 
             <fieldset className="border border-[#e5e5e0] rounded-lg p-4">
@@ -375,9 +369,9 @@ export default function CustomerPage() {
 
             {errorMsg && <p className="text-xs text-[#d32f2f]">{errorMsg}</p>}
 
-            <button type="submit" disabled={submitting} className={btnPrimary}>
+            <PrimaryButton type="submit" disabled={submitting}>
               {submitting ? "제출 중..." : "쿠폰 받기"}
-            </button>
+            </PrimaryButton>
           </form>
         </div>
       </main>

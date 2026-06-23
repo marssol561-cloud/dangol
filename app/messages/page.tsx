@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import AppHeader from "@/app/components/AppHeader";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 type Segment = "grade_vip" | "grade_regular" | "grade_normal" | "churn" | "anniversary";
 type TemplateId = "coupon_issued" | "stamp_reward" | "returning_reminder" | "churn_reengage" | "anniversary";
@@ -126,13 +127,12 @@ function MessagesPageInner() {
               * 광고 수신 동의 고객에게만 발송됩니다. 21:00–08:00 KST 야간 발송은 차단됩니다.
             </div>
 
-            <button
+            <PrimaryButton
               onClick={handleSend}
               disabled={sending || !segment || !templateId}
-              className="bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-40"
             >
               {sending ? "발송 중..." : "메시지 발송"}
-            </button>
+            </PrimaryButton>
           </div>
 
           {result && (

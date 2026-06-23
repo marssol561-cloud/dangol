@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 type Channel = "sms" | "kakao" | "email";
 
@@ -169,13 +170,12 @@ function UnsubscribeContent() {
         </label>
       </section>
 
-      <button
+      <PrimaryButton
         onClick={handleSubmit}
         disabled={submitting || (optedOut.length === 0 && !withdrawThirdparty && !withdrawRequired)}
-        className="w-full bg-[#0f6e56] text-white rounded-lg py-3 text-sm font-semibold cursor-pointer disabled:opacity-40"
       >
         {submitting ? "처리 중…" : "적용하기"}
-      </button>
+      </PrimaryButton>
     </div>
   );
 }

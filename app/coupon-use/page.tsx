@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import AppHeader from "@/app/components/AppHeader";
+import Input from "@/app/components/ui/Input";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 type Result = { valid: true } | { valid: false; reason: string } | null;
 
@@ -54,7 +56,7 @@ export default function CouponUsePage() {
             <p className="text-sm text-[#5f5e5a]">고객의 쿠폰 코드를 입력하고 확인하세요.</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
+              <Input
                 type="text"
                 placeholder="쿠폰 코드 (예: ABC12345)"
                 value={code}
@@ -62,15 +64,11 @@ export default function CouponUsePage() {
                 autoCapitalize="characters"
                 maxLength={20}
                 required
-                className="bg-white border border-[#e5e5e0] rounded-lg px-4 py-3.5 text-[18px] font-mono tracking-widest text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full uppercase"
+                className="text-[18px] font-mono tracking-widest uppercase"
               />
-              <button
-                type="submit"
-                disabled={submitting}
-                className="bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60"
-              >
+              <PrimaryButton type="submit" disabled={submitting}>
                 {submitting ? "확인 중..." : "쿠폰 확인"}
-              </button>
+              </PrimaryButton>
             </form>
 
             {result !== null && (

@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { GRADE_LABEL, type Grade } from "@/lib/grade";
 import AppHeader from "@/app/components/AppHeader";
+import Input from "@/app/components/ui/Input";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 interface CustomerListItem {
   id: string;
@@ -373,20 +375,18 @@ function ManualAddModal({
           ))}
         </div>
 
-        <input
+        <Input
           type={channel === "email" ? "email" : "text"}
           placeholder={channel === "phone" ? "010-0000-0000" : channel === "email" ? "example@mail.com" : "카카오 ID"}
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
-          className="bg-white border border-[#e5e5e0] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0f6e56]"
         />
 
-        <input
+        <Input
           type="text"
           placeholder="고객 이름 (선택)"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-white border border-[#e5e5e0] rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0f6e56]"
         />
 
         <label className="flex items-center gap-2 text-sm text-[#2c2c2a] cursor-pointer">
@@ -396,13 +396,9 @@ function ManualAddModal({
 
         {error && <p className="text-xs text-[#d32f2f]">{error}</p>}
 
-        <button
-          onClick={submit}
-          disabled={submitting}
-          className="bg-[#0f6e56] text-white py-3 rounded-xl font-semibold text-sm cursor-pointer disabled:opacity-50"
-        >
+        <PrimaryButton onClick={submit} disabled={submitting}>
           {submitting ? "등록 중..." : "등록하기"}
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   );

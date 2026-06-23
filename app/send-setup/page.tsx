@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import AppHeader from "@/app/components/AppHeader";
+import Input from "@/app/components/ui/Input";
 
 const STEPS = [
   { label: "카카오 채널", desc: "카카오 비즈니스 채널 ID 입력" },
@@ -19,7 +20,6 @@ interface ChannelData {
   has_api_key: boolean;
 }
 
-const inputCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full";
 
 export default function SendSetupPage() {
   const [storeLinkId, setStoreLinkId] = useState("");
@@ -124,7 +124,7 @@ export default function SendSetupPage() {
 
                   {active && i === 0 && (
                     <div className="mt-4 flex flex-col gap-2">
-                      <input value={kakaoId} onChange={(e) => setKakaoId(e.target.value)} placeholder="pfXXXXXXXXXXXXXXXX" className={inputCls} />
+                      <Input value={kakaoId} onChange={(e) => setKakaoId(e.target.value)} placeholder="pfXXXXXXXXXXXXXXXX" />
                       <button onClick={() => save(1, { kakao_channel_id: kakaoId })} disabled={saving} className="bg-[#0f6e56] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60 self-start">
                         {saving ? "저장 중..." : "저장 후 다음"}
                       </button>
@@ -134,7 +134,7 @@ export default function SendSetupPage() {
 
                   {active && i === 1 && (
                     <div className="mt-4 flex flex-col gap-2">
-                      <input value={senderNum} onChange={(e) => setSenderNum(e.target.value)} placeholder="01012345678" className={inputCls} />
+                      <Input value={senderNum} onChange={(e) => setSenderNum(e.target.value)} placeholder="01012345678" />
                       <button onClick={() => save(2, { sender_number: senderNum })} disabled={saving} className="bg-[#0f6e56] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60 self-start">
                         {saving ? "저장 중..." : "저장 후 다음"}
                       </button>
@@ -143,7 +143,7 @@ export default function SendSetupPage() {
 
                   {active && i === 2 && (
                     <div className="mt-4 flex flex-col gap-2">
-                      <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Solapi API Secret Key" className={inputCls} />
+                      <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Solapi API Secret Key" />
                       <p className="text-xs text-[#888780]">* 키는 암호화 저장되며 이후 조회되지 않습니다.</p>
                       <button onClick={() => save(3, { api_key: apiKey })} disabled={saving || !apiKey} className="bg-[#0f6e56] text-white font-medium text-sm rounded-lg px-4 py-2.5 cursor-pointer disabled:opacity-60 self-start">
                         {saving ? "저장 중..." : "저장 후 다음"}

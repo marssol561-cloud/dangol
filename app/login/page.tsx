@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signInOwner } from '@/lib/auth';
 import AppHeader from '@/app/components/AppHeader';
+import Card from '@/app/components/ui/Card';
+import FormField from '@/app/components/ui/FormField';
+import Input from '@/app/components/ui/Input';
+import PrimaryButton from '@/app/components/ui/PrimaryButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -63,61 +67,53 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
       <AppHeader variant="auth" />
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-12">
-      <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 w-full max-w-[420px]">
-        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-4">사장님 로그인</h1>
+      <div className="flex flex-col items-center p-[48px] w-full">
+        <Card>
+          <p className="text-[24px] font-semibold text-[#2c2c2a]">사장님 로그인</p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#5f5e5a]">이메일</label>
-            <input
-              type="email"
-              placeholder="이메일을 입력하세요"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
-            />
+          <form onSubmit={handleSubmit} className="contents">
+            <FormField label="이메일">
+              <Input
+                type="email"
+                placeholder="owner@store.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </FormField>
+
+            <FormField label="비밀번호">
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </FormField>
+
+            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+
+            <PrimaryButton type="submit" disabled={loading}>
+              {loading ? '로그인 중...' : '로그인'}
+            </PrimaryButton>
+          </form>
+
+          <div className="flex items-center gap-[6px]">
+            <span className="text-[13px] text-[#5f5e5a]">계정이 없으세요?</span>
+            <Link href="/signup" className="text-[13px] font-medium text-[#0f6e56]">
+              회원가입
+            </Link>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[#5f5e5a]">비밀번호</label>
-            <input
-              type="password"
-              placeholder="비밀번호를 입력하세요"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors"
-            />
-          </div>
 
-          {error && (
-            <p className="text-[#d32f2f] text-xs">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60"
-          >
-            {loading ? '로그인 중...' : '로그인'}
-          </button>
-        </form>
-
-        <div className="mt-5 flex justify-center items-center gap-2 text-[13px]">
           <button
             onClick={handlePasswordReset}
-            className="text-[#0f6e56] bg-transparent border-none cursor-pointer p-0"
+            className="text-[13px] font-medium text-[#0f6e56] bg-transparent border-none cursor-pointer p-0 text-left"
           >
-            비밀번호 재설정
+            비밀번호 찾기
           </button>
-          <span className="text-[#e5e5e0]">|</span>
-          <Link href="/signup" className="text-[#0f6e56] font-medium">
-            회원가입
-          </Link>
-        </div>
+        </Card>
       </div>
-      </main>
     </div>
   );
 }

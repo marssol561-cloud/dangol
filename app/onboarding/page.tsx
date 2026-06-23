@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/auth';
 import AppHeader from '@/app/components/AppHeader';
+import Card from '@/app/components/ui/Card';
+import FormField from '@/app/components/ui/FormField';
+import Input from '@/app/components/ui/Input';
+import PrimaryButton from '@/app/components/ui/PrimaryButton';
 
 type MasterStore = { store_id: string; store_name: string; address: string };
 type Step = 'connect' | 'qr' | 'done';
@@ -136,69 +140,61 @@ export default function OnboardingPage() {
     window.open(`/api/qr?code=${code}`, '_blank');
   }
 
-  const inputCls = "bg-white border border-[#e5e5e0] rounded-lg px-3 py-3 text-sm text-[#2c2c2a] placeholder-[#888780] outline-none focus:border-[#0f6e56] transition-colors w-full";
-  const btnPrimary = "bg-[#0f6e56] text-white font-semibold text-[15px] rounded-lg py-3.5 w-full cursor-pointer disabled:opacity-60";
-  const btnOutline = "border border-[#e5e5e0] text-[#5f5e5a] font-semibold text-sm rounded-lg py-3 w-full cursor-pointer";
+  const btnOutline = 'border border-[#e5e5e0] text-[#5f5e5a] font-semibold text-sm rounded-[8px] py-[14px] px-[20px] w-full cursor-pointer';
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
       <AppHeader variant="auth" />
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-12">
+      <div className="flex flex-col items-center p-[48px] w-full">
         {step === 'connect' ? (
-          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 w-full max-w-[480px]">
-            <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-[#2c2c2a] leading-tight">매장 연결</h1>
-              <p className="mt-1 text-sm text-[#5f5e5a]">운영하시는 매장을 검색해 주세요</p>
+          <Card className="w-[420px]">
+            <div>
+              <p className="text-[24px] font-semibold text-[#2c2c2a]">매장 연결</p>
+              <p className="text-[14px] text-[#5f5e5a] mt-[6px]">운영하시는 매장을 검색해 주세요</p>
             </div>
 
-            <form onSubmit={handleSearch} className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#5f5e5a]">매장명</label>
-                <input
+            <form onSubmit={handleSearch} className="contents">
+              <FormField label="매장명">
+                <Input
                   type="text"
                   placeholder="매장명"
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
-                  className={inputCls}
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#5f5e5a]">주소</label>
-                <input
+              </FormField>
+              <FormField label="주소">
+                <Input
                   type="text"
                   placeholder="주소"
                   value={searchAddress}
                   onChange={(e) => setSearchAddress(e.target.value)}
-                  className={inputCls}
                 />
-              </div>
-              <button type="submit" disabled={searching} className={btnPrimary}>
+              </FormField>
+              <PrimaryButton type="submit" disabled={searching}>
                 {searching ? '검색 중...' : '검색'}
-              </button>
+              </PrimaryButton>
             </form>
 
-            {error && <p className="text-[#d32f2f] text-xs mt-3">{error}</p>}
+            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
 
             {searched && results.length === 0 && (
-              <div className="mt-4 p-4 bg-[#f8f7f4] border border-[#e5e5e0] rounded-xl">
-                <p className="text-sm text-[#5f5e5a] mb-3">등록된 매장이 없습니다.</p>
+              <div className="p-[16px] bg-[#f8f7f4] border border-[#e5e5e0] rounded-[12px] flex flex-col gap-[12px]">
+                <p className="text-sm text-[#5f5e5a]">등록된 매장이 없습니다.</p>
                 {!requestSent ? (
-                  <form onSubmit={handleStoreRequest} className="flex flex-col gap-3">
+                  <form onSubmit={handleStoreRequest} className="flex flex-col gap-[12px]">
                     <p className="text-xs text-[#888780]">잇다랩에 매장 등록을 요청할 수 있습니다:</p>
-                    <input
+                    <Input
                       type="text"
                       placeholder="매장명 *"
                       value={requestName}
                       onChange={(e) => setRequestName(e.target.value)}
                       required
-                      className={inputCls}
                     />
-                    <input
+                    <Input
                       type="text"
                       placeholder="주소"
                       value={requestAddress}
                       onChange={(e) => setRequestAddress(e.target.value)}
-                      className={inputCls}
                     />
                     <button type="submit" disabled={loading} className={btnOutline}>
                       {loading ? '요청 중...' : '잇다랩에 매장 등록 요청'}
@@ -213,11 +209,11 @@ export default function OnboardingPage() {
             )}
 
             {results.length > 0 && (
-              <ul className="mt-4 flex flex-col gap-2">
+              <ul className="flex flex-col gap-[8px]">
                 {results.map((s) => (
                   <li
                     key={s.store_id}
-                    className="flex justify-between items-center p-4 border border-[#e5e5e0] rounded-xl bg-white"
+                    className="flex justify-between items-center p-[16px] border border-[#e5e5e0] rounded-[12px] bg-white"
                   >
                     <div>
                       <p className="font-semibold text-sm text-[#2c2c2a]">{s.store_name}</p>
@@ -226,7 +222,7 @@ export default function OnboardingPage() {
                     <button
                       onClick={() => handleSelectStore(s)}
                       disabled={loading}
-                      className="bg-[#0f6e56] text-white text-[13px] font-medium rounded-lg px-4 py-2 cursor-pointer whitespace-nowrap disabled:opacity-60"
+                      className="bg-[#0f6e56] text-white text-[13px] font-medium rounded-[8px] px-[16px] py-[8px] cursor-pointer whitespace-nowrap disabled:opacity-60"
                     >
                       선택
                     </button>
@@ -234,15 +230,15 @@ export default function OnboardingPage() {
                 ))}
               </ul>
             )}
-          </div>
+          </Card>
         ) : (
-          <div className="bg-white border border-[#e5e5e0] rounded-xl p-6 w-full max-w-[480px]">
-            <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-[#2c2c2a]">QR 코드 발급</h1>
-              {storeName && <p className="text-sm text-[#5f5e5a] mt-1">{storeName}</p>}
+          <Card className="w-[420px]">
+            <div>
+              <p className="text-[24px] font-semibold text-[#2c2c2a]">QR 코드 발급</p>
+              {storeName && <p className="text-[14px] text-[#5f5e5a] mt-[6px]">{storeName}</p>}
             </div>
 
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-[8px]">
               <div className="w-7 h-7 rounded-full bg-[#0f6e56] flex items-center justify-center text-white text-xs font-semibold">✓</div>
               <div className="h-0.5 w-12 bg-[#9fe1cb]" />
               <div className="w-7 h-7 rounded-full bg-[#ef9f27] flex items-center justify-center text-[#633806] text-xs font-semibold">2</div>
@@ -250,30 +246,28 @@ export default function OnboardingPage() {
               <div className="w-7 h-7 rounded-full border border-[#e5e5e0] flex items-center justify-center text-[#888780] text-xs font-semibold">3</div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-xl p-4">
-                <p className="text-sm font-semibold text-[#085041]">✓ 매장 연결 완료</p>
-              </div>
-              <button onClick={handleQrDownload} className={btnPrimary}>
-                QR PDF 다운로드
-              </button>
+            <div className="bg-[#e1f5ee] border border-[#9fe1cb] rounded-[12px] p-[16px]">
+              <p className="text-sm font-semibold text-[#085041]">✓ 매장 연결 완료</p>
             </div>
 
-            {error && <p className="text-[#d32f2f] text-xs mt-3">{error}</p>}
+            <PrimaryButton onClick={handleQrDownload}>
+              QR PDF 다운로드
+            </PrimaryButton>
 
-            <div className="mt-3 flex flex-col gap-2">
-              <button onClick={() => router.push('/')} className={btnOutline}>
-                대시보드로 이동
-              </button>
-              <p className="text-center text-xs text-[#888780]">
-                <Link href="/send-setup" className="text-[#0f6e56] font-medium">
-                  발송 설정하기 (다음 단계) →
-                </Link>
-              </p>
-            </div>
-          </div>
+            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+
+            <button onClick={() => router.push('/')} className={btnOutline}>
+              대시보드로 이동
+            </button>
+
+            <p className="text-center text-xs text-[#888780]">
+              <Link href="/send-setup" className="text-[#0f6e56] font-medium">
+                발송 설정하기 (다음 단계) →
+              </Link>
+            </p>
+          </Card>
         )}
-      </main>
+      </div>
     </div>
   );
 }
