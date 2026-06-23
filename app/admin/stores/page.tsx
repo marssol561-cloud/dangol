@@ -52,47 +52,43 @@ export default async function AdminStoresPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="admin" activeItem="매장" />
 
-      <main className="flex-1 p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/admin" className="text-[#888780] text-sm">← 대시보드</Link>
-          <h1 className="text-2xl font-semibold text-[#2c2c2a]">매장</h1>
-          <span className="ml-auto text-xs text-[#888780]">{storeList.length}개 매장</span>
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>매장(점주) 관리</h1>
+          <span style={{ fontSize: 12, color: '#888780' }}>{storeList.length}개 매장</span>
         </div>
 
-        <div className="max-w-3xl">
-          {storeList.length === 0 ? (
-            <p className="text-center text-sm text-[#888780] py-12">등록된 매장이 없습니다</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {storeList.map((s) => (
-                <div key={s.id} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px' }}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium text-[#2c2c2a]">{s.store_name ?? "-"}</p>
-                      <p className="text-xs text-[#888780] mt-0.5">{s.store_code} · {s.address ?? "-"}</p>
-                    </div>
-                    <span className="text-xs text-[#888780] shrink-0">
-                      {new Date(s.created_at).toLocaleDateString("ko-KR")}
-                    </span>
-                  </div>
-                  <div className="flex gap-6 mt-3">
-                    <div>
-                      <p className="text-xs text-[#888780]">고객 수</p>
-                      <p className="text-lg font-bold text-[#2c2c2a]">{(countsMap[s.id] ?? 0).toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-[#888780]">발송 수</p>
-                      <p className="text-lg font-bold text-[#2c2c2a]">{(sentMap[s.id] ?? 0).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {storeList.length === 0 ? (
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#888780', paddingTop: 48 }}>등록된 매장이 없습니다</p>
+        ) : (
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, overflow: 'hidden' }}>
+            {/* Table header */}
+            <div style={{ background: '#f8f7f4', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>매장명</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>상태</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>고객 수</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>이번달 발송</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>최근 활동</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 48 }}>상세</span>
             </div>
-          )}
-        </div>
+            {storeList.map((s) => (
+              <div key={s.id} style={{ background: '#fff', borderTop: '1px solid #e5e5e0', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ flex: 2 }}>
+                  <p style={{ fontSize: 14, color: '#2c2c2a' }}>{s.store_name ?? "-"}</p>
+                  <p style={{ fontSize: 12, color: '#888780' }}>{s.store_code}</p>
+                </div>
+                <span style={{ fontSize: 14, color: '#2c2c2a', width: 60 }}>활성</span>
+                <span style={{ fontSize: 14, color: '#2c2c2a', width: 60 }}>{(countsMap[s.id] ?? 0).toLocaleString()}</span>
+                <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{(sentMap[s.id] ?? 0).toLocaleString()}건</span>
+                <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{new Date(s.created_at).toLocaleDateString("ko-KR")}</span>
+                <Link href={`/admin/stores/${s.id}`} style={{ fontSize: 14, color: '#0f6e56', textDecoration: 'none', width: 48 }}>보기 &gt;</Link>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

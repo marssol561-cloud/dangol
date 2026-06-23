@@ -51,76 +51,52 @@ export default async function AdminChannelsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="admin" activeItem="채널 연결" />
 
-      <main className="flex-1 p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/admin" className="text-[#888780] text-sm">← 대시보드</Link>
-          <h1 className="text-2xl font-semibold text-[#2c2c2a]">채널 모니터링</h1>
-          {supportTargets.length > 0 && (
-            <span className="ml-auto bg-[#fff0f0] text-[#d32f2f] text-xs px-2 py-0.5 rounded-full border border-[#d32f2f]/30">
-              지원 대상 {supportTargets.length}개
-            </span>
-          )}
-        </div>
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>점주 채널 연결 모니터링</h1>
+          <p style={{ fontSize: 13, color: '#5f5e5a' }}>점주별 발송 채널(A9) 연결 상태 · 미완료 점주 지원 대상</p>
 
-        <div className="max-w-3xl flex flex-col gap-6">
-          {/* Support targets */}
-          {supportTargets.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-[#d32f2f] mb-3">⚠ 미완료 설정 (support 대상)</h2>
-              <div className="flex flex-col gap-2">
-                {supportTargets.map((s) => {
-                  const ch = channelMap[s.id];
-                  return (
-                    <div key={s.id} className="bg-[#fff0f0] border border-[#d32f2f]/20 rounded-xl px-5 py-3">
-                      <p className="text-sm font-medium text-[#d32f2f]">{s.store_name ?? "-"}</p>
-                      <p className="text-xs text-[#d32f2f]/70 mt-0.5">
-                        {s.store_code} · setup_step {ch?.setup_step ?? 0}/4
-                        {ch ? ` · ${ch.provider}` : " · 채널 없음"}
-                      </p>
-                    </div>
-                  );
-                })}
+          {storeList.length === 0 ? (
+            <p style={{ textAlign: 'center', fontSize: 14, color: '#888780', paddingTop: 48 }}>매장 없음</p>
+          ) : (
+            <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ background: '#f8f7f4', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>매장명</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>카카오 채널</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>솔라피 연결</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>진행 단계</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>상태</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>지원</span>
               </div>
-            </section>
+              {storeList.map((s) => {
+                const ch = channelMap[s.id];
+                const isComplete = ch && ch.setup_step >= 4;
+                const needsSupport = !ch || ch.setup_step < 4;
+                const kakaoConnected = ch?.provider === "kakao" && ch.connected;
+                const solapiConnected = ch?.provider === "solapi" && ch.connected;
+                return (
+                  <div key={s.id} style={{ background: '#fff', borderTop: '1px solid #e5e5e0', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ flex: 2 }}>
+                      <p style={{ fontSize: 14, color: '#2c2c2a' }}>{s.store_name ?? "—"}</p>
+                      <p style={{ fontSize: 12, color: '#888780' }}>{s.store_code}</p>
+                    </div>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{kakaoConnected ? "완료" : "미완료"}</span>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{solapiConnected ? "완료" : ch && ch.setup_step > 1 ? "진행중" : "미완료"}</span>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{ch ? `${ch.setup_step}/4` : "0/4"}</span>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 60 }}>{isComplete ? "정상" : needsSupport ? "막힘" : "대기"}</span>
+                    <span style={{ fontSize: 14, width: 60 }}>
+                      {needsSupport ? (
+                        <Link href={`/admin/stores/${s.id}`} style={{ color: '#0f6e56', textDecoration: 'none' }}>지원 &gt;</Link>
+                      ) : "—"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           )}
-
-          {/* All stores */}
-          <section>
-            <h2 className="text-sm font-semibold text-[#5f5e5a] mb-3">전체 매장 채널 상태</h2>
-            {storeList.length === 0 ? (
-              <p className="text-sm text-[#888780]">매장 없음</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {storeList.map((s) => {
-                  const ch = channelMap[s.id];
-                  const isComplete = ch && ch.setup_step >= 4;
-                  return (
-                    <div key={s.id} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                      <div>
-                        <p className="text-sm font-medium text-[#2c2c2a]">{s.store_name ?? "-"}</p>
-                        <p className="text-xs text-[#888780]">{s.store_code}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {ch ? (
-                          <>
-                            <span className="text-xs text-[#888780]">{ch.provider} · step {ch.setup_step}/4</span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${isComplete ? "bg-[#e1f5ee] text-[#085041]" : "bg-[#faeeda] text-[#633806]"}`}>
-                              {ch.connected ? "연결됨" : "미연결"}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-xs bg-[#f8f7f4] text-[#888780] px-2 py-0.5 rounded-full border border-[#e5e5e0]">미설정</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
         </div>
       </main>
     </div>

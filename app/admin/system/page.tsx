@@ -44,77 +44,52 @@ export default async function AdminSystemPage() {
     { name: "SOLAPI", href: "https://app.solapi.com", desc: "문자 발송" },
   ];
 
+  const statusCards = [
+    { name: "Sentry 모니터링", desc: `스키마 v${schemaVersion} · 관리자 ${adminCount ?? 0}명`, href: "https://sentry.io" },
+    { name: "도구창 카드", desc: "Supabase · Vercel · SOLAPI", href: "https://supabase.com/dashboard" },
+    { name: "발송 큐", desc: `감사 로그 ${(auditCount ?? 0).toLocaleString()}건 누적`, href: "https://app.solapi.com" },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="admin" activeItem="시스템" />
 
-      <main className="flex-1 p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/admin" className="text-[#888780] text-sm">← 대시보드</Link>
-          <h1 className="text-2xl font-semibold text-[#2c2c2a]">시스템</h1>
-        </div>
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>시스템·운영</h1>
 
-        <div className="max-w-3xl flex flex-col gap-6">
-          {/* System info */}
-          <section>
-            <h2 className="text-sm font-semibold text-[#5f5e5a] mb-3">시스템 정보</h2>
-            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'16px 20px', display:'flex', flexDirection:'column', gap:12 }}>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#888780]">스키마 버전</span>
-                <span className="font-mono font-medium text-[#2c2c2a]">{schemaVersion}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#888780]">관리자 수</span>
-                <span className="font-medium text-[#2c2c2a]">{adminCount ?? 0}명</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#888780]">감사 로그 건수</span>
-                <span className="font-medium text-[#2c2c2a]">{(auditCount ?? 0).toLocaleString()}건</span>
-              </div>
-            </div>
-          </section>
+          {/* 3 status cards */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            {statusCards.map((card) => (
+              <a
+                key={card.name}
+                href={card.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, width: 384, display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0f6e56', flexShrink: 0 }} />
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#2c2c2a' }}>{card.name}</p>
+                </div>
+                <p style={{ fontSize: 13, color: '#5f5e5a' }}>{card.desc}</p>
+              </a>
+            ))}
+          </div>
 
-          {/* Tools */}
-          <section>
-            <h2 className="text-sm font-semibold text-[#5f5e5a] mb-3">운영 도구</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {tools.map((t) => (
-                <a
-                  key={t.name}
-                  href={t.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 16px', display:'block' }}
-                >
-                  <p className="text-sm font-medium text-[#085041]">{t.name}</p>
-                  <p className="text-xs text-[#888780] mt-0.5">{t.desc}</p>
-                </a>
-              ))}
-            </div>
-          </section>
-
-          {/* Recent audit logs */}
-          <section>
-            <h2 className="text-sm font-semibold text-[#5f5e5a] mb-3">최근 감사 로그</h2>
+          {/* System log */}
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: '#2c2c2a' }}>시스템 로그</p>
             {auditRows.length === 0 ? (
-              <p className="text-sm text-[#888780]">감사 로그 없음</p>
+              <p style={{ fontSize: 13, color: '#888780' }}>감사 로그 없음</p>
             ) : (
-              <div className="flex flex-col gap-2">
-                {auditRows.map((a, i) => (
-                  <div key={i} style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:'12px 16px', display:'flex', justifyContent:'space-between' }} className="text-xs text-[#5f5e5a]">
-                    <span>
-                      <span className="font-medium">{a.action}</span>
-                      {" → "}{a.target}
-                      {a.count != null ? ` (${a.count}건)` : ""}
-                    </span>
-                    <span className="text-[#888780] shrink-0 ml-2">
-                      {new Date(a.created_at).toLocaleString("ko-KR")}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              auditRows.map((a, i) => (
+                <p key={i} style={{ fontSize: 13, color: '#5f5e5a' }}>
+                  {new Date(a.created_at).toLocaleString("ko-KR")} · {a.action}{a.target ? ` → ${a.target}` : ""}{a.count != null ? ` (${a.count}건)` : ""}
+                </p>
+              ))
             )}
-          </section>
+          </div>
         </div>
       </main>
     </div>
