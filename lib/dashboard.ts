@@ -7,6 +7,7 @@ export interface MonthlyStats {
   returningVisits: number;
   returnRate: number;
   cumulativeRegulars: number;
+  monthlyStamps: number;
 }
 
 export interface ConsentRateResult {
@@ -58,7 +59,7 @@ export async function monthlyStats(storeLinkId: string): Promise<MonthlyStats> {
     .eq("store_link_id", storeLinkId)
     .gte("visit_count", 20);
 
-  return { newCustomers, returningVisits, returnRate, cumulativeRegulars: cumulativeRegulars ?? 0 };
+  return { newCustomers, returningVisits, returnRate, cumulativeRegulars: cumulativeRegulars ?? 0, monthlyStamps: totalVisits };
 }
 
 export async function consentRate(storeLinkId: string): Promise<ConsentRateResult> {
