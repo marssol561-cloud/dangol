@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getOwnerContext } from "@/lib/ownerAuth";
 import { monthlyStats, consentRate, messageEffect, todayCards, type TodayCard } from "@/lib/dashboard";
 import { getServerClient } from "@/lib/dangolDb";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function OwnerDashboardPage() {
   const ctx = await getOwnerContext();
@@ -30,127 +31,109 @@ export default async function OwnerDashboardPage() {
   const isEmpty = monthly.newCustomers === 0 && monthly.cumulativeRegulars === 0;
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-10">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">리붐단골</h1>
-        <Link href="/settings" className="text-sm text-gray-500">설정</Link>
-      </header>
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
+      <AppHeader variant="owner" activeItem="대시보드" />
 
-      <div className="max-w-xl mx-auto px-4 pt-6 space-y-5">
-        {isEmpty ? (
-          <EmptyState storeLinkId={ctx.storeLinkId} />
-        ) : (
-          <>
-            {/* Monthly stats */}
-            <section className="bg-white rounded-2xl p-5 shadow-sm">
-              <p className="text-xs text-gray-400 mb-3">이번 달</p>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <Link href="/customers?filter=new" className="group">
-                  <p className="text-3xl font-bold text-teal-600">{monthly.newCustomers}</p>
-                  <p className="text-xs text-gray-500 mt-1">신규</p>
-                </Link>
-                <Link href="/customers?filter=returning" className="group">
-                  <p className="text-3xl font-bold text-teal-600">{monthly.returningVisits}</p>
-                  <p className="text-xs text-gray-500 mt-1">재방문</p>
-                </Link>
-                <div>
-                  <p className="text-3xl font-bold text-teal-600">
-                    {Math.round(monthly.returnRate * 100)}%
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">재방문율</p>
-                </div>
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>대시보드</h1>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* First-customer banner — shown only when no data yet */}
+          {isEmpty && (
+            <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>🏪 첫 손님을 받아보세요</p>
+                <p style={{ fontSize: 12, color: '#5f5e5a' }}>QR 코드를 출력해 카운터에 붙여두세요</p>
               </div>
-            </section>
-
-            {/* Cumulative + consent */}
-            <section className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <Link href="/customers" className="block">
-                  <p className="text-xs text-gray-400">누적 단골 이상</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {monthly.cumulativeRegulars}
-                    <span className="text-sm font-normal text-gray-500 ml-1">명</span>
-                  </p>
-                </Link>
-                <div>
-                  <p className="text-xs text-gray-400">광고 동의율</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {Math.round(consent.rate * 100)}%
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {consent.consented}/{consent.total}명
-                  </p>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Link href="/api/qr" style={{ background: '#0f6e56', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>QR 다운로드</Link>
+                <Link href="/settings" style={{ fontSize: 12, color: '#888780', textDecoration: 'underline' }}>매장 설정</Link>
               </div>
-            </section>
+            </div>
+          )}
 
-            {/* Message effect */}
-            {effect.revisitCount > 0 && (
-              <div className="bg-teal-50 rounded-2xl px-5 py-3 flex items-center gap-2">
-                <span className="text-lg">📨</span>
-                <p className="text-sm text-teal-700">
-                  소식 받고 다시 온 단골{" "}
-                  <strong className="text-teal-800">{effect.revisitCount}명</strong>
-                </p>
-              </div>
-            )}
-
-            {/* Today cards */}
-            {cards.some((c) => c.count > 0) && (
-              <section>
-                <p className="text-xs text-gray-400 mb-2 px-1">오늘 액션</p>
-                <div className="space-y-2">
-                  {cards.filter((c) => c.count > 0).map((card: TodayCard) => (
-                    <Link
-                      key={card.segment}
-                      href={`/messages?segment=${card.segment}`}
-                      className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 shadow-sm"
-                    >
-                      <span className="text-sm text-gray-700">{card.label}</span>
-                      <span className="text-teal-600 font-semibold text-sm">
-                        {card.count}명 →
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-
-        {/* Send channel status */}
-        <div className="text-center pt-2">
-          {sendChannel.connected ? (
-            <p className="text-xs text-gray-400">✓ 소식 발송 연결됨</p>
-          ) : (
-            <Link href="/send-setup" className="text-xs text-amber-500 underline">
-              소식 발송 설정하기 ({sendChannel.setup_step}/4단계 완료)
+          {/* 6 KPI stat cards — always visible */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            <Link href="/customers?filter=new" style={{ width: 224, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}>
+              <p style={{ fontSize: 14, color: '#5f5e5a' }}>신규 고객</p>
+              <p style={{ fontSize: 28, fontWeight: 700, color: '#085041' }}>{monthly.newCustomers}</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>이번 달</p>
             </Link>
+            <Link href="/customers?filter=returning" style={{ width: 224, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}>
+              <p style={{ fontSize: 14, color: '#5f5e5a' }}>재방문</p>
+              <p style={{ fontSize: 28, fontWeight: 700, color: '#085041' }}>{monthly.returningVisits}</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>이번 달</p>
+            </Link>
+            <div style={{ width: 224, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <p style={{ fontSize: 14, color: '#5f5e5a' }}>재방문율</p>
+              <p style={{ fontSize: 28, fontWeight: 700, color: '#085041' }}>{Math.round(monthly.returnRate * 100)}%</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>이번 달</p>
+            </div>
+            <Link href="/customers" style={{ width: 224, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}>
+              <p style={{ fontSize: 14, color: '#5f5e5a' }}>누적 단골 이상</p>
+              <p style={{ fontSize: 28, fontWeight: 700, color: '#085041' }}>{monthly.cumulativeRegulars}</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>명</p>
+            </Link>
+            <div style={{ width: 224, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <p style={{ fontSize: 14, color: '#5f5e5a' }}>이번 달 적립 스탬프</p>
+              <p style={{ fontSize: 28, fontWeight: 700, color: '#085041' }}>{monthly.monthlyStamps}</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>개</p>
+            </div>
+            <div style={{ width: 224, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <p style={{ fontSize: 14, color: '#5f5e5a' }}>광고 동의율</p>
+              <p style={{ fontSize: 28, fontWeight: 700, color: '#085041' }}>{Math.round(consent.rate * 100)}%</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>{consent.consented}/{consent.total}명</p>
+            </div>
+          </div>
+
+          {/* Message effect banner */}
+          {effect.revisitCount > 0 && (
+            <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: '#085041' }}>📨 소식 효과</p>
+              <p style={{ fontSize: 14, color: '#085041' }}>
+                소식 받고 다시 온 단골 <strong style={{ fontWeight: 700 }}>{effect.revisitCount}명</strong>
+              </p>
+            </div>
+          )}
+
+          {/* Today action cards */}
+          {cards.some((c) => c.count > 0) && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 12, color: '#888780' }}>오늘 할 일</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                {cards.filter((c) => c.count > 0).map((card: TodayCard) => (
+                  <Link
+                    key={card.segment}
+                    href={`/messages?segment=${card.segment}`}
+                    style={{ width: 389, background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 12, textDecoration: 'none' }}
+                  >
+                    <p style={{ fontSize: 14, color: '#5f5e5a' }}>{card.label}</p>
+                    <p style={{ fontSize: 24, fontWeight: 700, color: '#2c2c2a' }}>{card.count}명</p>
+                    <div style={{ background: '#ef9f27', color: '#633806', borderRadius: 8, padding: '10px 20px', fontWeight: 600, fontSize: 14, alignSelf: 'flex-start' }}>
+                      소식 보내기 →
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-      </div>
-    </main>
-  );
-}
 
-function EmptyState({ storeLinkId }: { storeLinkId: string }) {
-  void storeLinkId;
-  return (
-    <div className="bg-white rounded-2xl p-10 text-center shadow-sm">
-      <p className="text-4xl mb-4">🏪</p>
-      <p className="text-lg font-semibold text-gray-700 mb-2">첫 손님을 받아보세요</p>
-      <p className="text-sm text-gray-400 mb-6">QR 코드를 출력해 카운터에 붙여두세요</p>
-      <Link
-        href="/api/qr"
-        className="inline-block bg-teal-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium"
-      >
-        QR PDF 다운로드
-      </Link>
-      <p className="mt-4">
-        <Link href="/settings" className="text-xs text-gray-400 underline">
-          매장 설정
-        </Link>
-      </p>
+        {/* Send channel status */}
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          {sendChannel.connected ? (
+            <p style={{ fontSize: 12, color: '#888780' }}>✓ 소식 발송 연결됨</p>
+          ) : (
+            <span style={{ background: '#faeeda', borderRadius: 999, padding: '6px 12px', fontSize: 12, color: '#633806', display: 'inline-block' }}>
+              <Link href="/send-setup" style={{ color: '#633806', textDecoration: 'none' }}>
+                소식 발송 설정하기 ({sendChannel.setup_step}/4단계 완료)
+              </Link>
+            </span>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

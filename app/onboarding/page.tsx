@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/auth';
+import AppHeader from '@/app/components/AppHeader';
+import Card from '@/app/components/ui/Card';
+import FormField from '@/app/components/ui/FormField';
+import Input from '@/app/components/ui/Input';
+import PrimaryButton from '@/app/components/ui/PrimaryButton';
 
 type MasterStore = { store_id: string; store_name: string; address: string };
 type Step = 'connect' | 'qr' | 'done';
@@ -24,7 +29,6 @@ export default function OnboardingPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Check if store already connected
   useEffect(() => {
     async function checkOwner() {
       const supabase = getBrowserSupabase();
@@ -110,7 +114,6 @@ export default function OnboardingPage() {
   }
 
   async function handleQrDownload() {
-    // Get store_code from DB if not already set (resuming session)
     let code = storeCode;
     if (!code) {
       const supabase = getBrowserSupabase();
@@ -137,208 +140,134 @@ export default function OnboardingPage() {
     window.open(`/api/qr?code=${code}`, '_blank');
   }
 
-  // ─── Step: Connect ────────────────────────────────────────
-  if (step === 'connect') {
-    return (
-      <main style={styles.container}>
-        <div style={styles.card}>
-          <h1 style={styles.title}>매장 연결</h1>
-          <p style={styles.subtitle}>운영하시는 매장을 검색해 주세요</p>
+  const btnOutlineStyle = { border: '1px solid #e5e5e0', color: '#5f5e5a', fontWeight: 600, fontSize: 14, borderRadius: 8, padding: '14px 20px', width: '100%', cursor: 'pointer', background: '#fff', boxSizing: 'border-box' as const };
 
-          <form onSubmit={handleSearch} style={styles.form}>
-            <input
-              type="text"
-              placeholder="매장명"
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="주소"
-              value={searchAddress}
-              onChange={(e) => setSearchAddress(e.target.value)}
-              style={styles.input}
-            />
-            <button type="submit" disabled={searching} style={styles.button}>
-              {searching ? '검색 중...' : '검색'}
-            </button>
-          </form>
-
-          {error && <p style={styles.error}>{error}</p>}
-
-          {searched && results.length === 0 && (
-            <div style={styles.emptyBox}>
-              <p style={styles.emptyText}>등록된 매장이 없습니다.</p>
-              {!requestSent ? (
-                <form onSubmit={handleStoreRequest} style={styles.form}>
-                  <p style={{ fontSize: 13, color: '#555', margin: '4px 0 8px' }}>
-                    잇다랩에 매장 등록을 요청할 수 있습니다:
-                  </p>
-                  <input
-                    type="text"
-                    placeholder="매장명 *"
-                    value={requestName}
-                    onChange={(e) => setRequestName(e.target.value)}
-                    required
-                    style={styles.input}
-                  />
-                  <input
-                    type="text"
-                    placeholder="주소"
-                    value={requestAddress}
-                    onChange={(e) => setRequestAddress(e.target.value)}
-                    style={styles.input}
-                  />
-                  <button type="submit" disabled={loading} style={styles.buttonOutline}>
-                    {loading ? '요청 중...' : '잇다랩에 매장 등록 요청'}
-                  </button>
-                </form>
-              ) : (
-                <p style={{ color: '#12787A', fontSize: 14 }}>
-                  ✓ 매장 등록 요청이 접수되었습니다. 검토 후 연락드리겠습니다.
-                </p>
-              )}
-            </div>
-          )}
-
-          {results.length > 0 && (
-            <ul style={styles.resultList}>
-              {results.map((s) => (
-                <li key={s.store_id} style={styles.resultItem}>
-                  <div>
-                    <strong>{s.store_name}</strong>
-                    <p style={styles.resultAddr}>{s.address}</p>
-                  </div>
-                  <button
-                    onClick={() => handleSelectStore(s)}
-                    disabled={loading}
-                    style={styles.selectBtn}
-                  >
-                    선택
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </main>
-    );
-  }
-
-  // ─── Step: QR ─────────────────────────────────────────────
   return (
-    <main style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>QR 코드 발급</h1>
-        {storeName && <p style={styles.subtitle}>{storeName}</p>}
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
+      <AppHeader variant="auth" />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+        {step === 'connect' ? (
+          <Card style={{ maxWidth: 520 }}>
+            <div>
+              <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>매장 연결</p>
+              <p style={{ fontSize: 14, color: '#5f5e5a', marginTop: 6 }}>운영하시는 매장을 검색해 주세요</p>
+            </div>
 
-        <div style={styles.steps}>
-          <div style={styles.stepDone}>✓ 매장 연결 완료</div>
-          <div style={styles.stepActive}>QR 발급 · 다운로드</div>
-          <div style={styles.stepNext}>
-            <Link href="/a9" style={{ color: '#aaa', textDecoration: 'none' }}>
-              발송 설정 (다음 단계)
-            </Link>
-          </div>
-        </div>
+            <form onSubmit={handleSearch} className="contents">
+              <FormField label="매장명">
+                <Input
+                  type="text"
+                  placeholder="매장명"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                />
+              </FormField>
+              <FormField label="주소">
+                <Input
+                  type="text"
+                  placeholder="주소"
+                  value={searchAddress}
+                  onChange={(e) => setSearchAddress(e.target.value)}
+                />
+              </FormField>
+              <PrimaryButton type="submit" disabled={searching}>
+                {searching ? '검색 중...' : '검색'}
+              </PrimaryButton>
+            </form>
 
-        <button onClick={handleQrDownload} style={{ ...styles.button, marginTop: 24 }}>
-          QR PDF 다운로드
-        </button>
+            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
 
-        {error && <p style={styles.error}>{error}</p>}
+            {searched && results.length === 0 && (
+              <div style={{ padding: 16, background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 14, color: '#5f5e5a' }}>등록된 매장이 없습니다.</p>
+                {!requestSent ? (
+                  <form onSubmit={handleStoreRequest} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p className="text-xs text-[#888780]">잇다랩에 매장 등록을 요청할 수 있습니다:</p>
+                    <Input
+                      type="text"
+                      placeholder="매장명 *"
+                      value={requestName}
+                      onChange={(e) => setRequestName(e.target.value)}
+                      required
+                    />
+                    <Input
+                      type="text"
+                      placeholder="주소"
+                      value={requestAddress}
+                      onChange={(e) => setRequestAddress(e.target.value)}
+                    />
+                    <button type="submit" disabled={loading} style={btnOutlineStyle}>
+                      {loading ? '요청 중...' : '잇다랩에 매장 등록 요청'}
+                    </button>
+                  </form>
+                ) : (
+                  <p className="text-[#0f6e56] text-sm">
+                    ✓ 매장 등록 요청이 접수되었습니다. 검토 후 연락드리겠습니다.
+                  </p>
+                )}
+              </div>
+            )}
 
-        <button
-          onClick={() => router.push('/')}
-          style={{ ...styles.buttonOutline, marginTop: 12 }}
-        >
-          대시보드로 이동
-        </button>
+            {results.length > 0 && (
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', margin: 0, padding: 0 }}>
+                {results.map((s) => (
+                  <li
+                    key={s.store_id}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, border: '1px solid #e5e5e0', borderRadius: 12, background: '#fff' }}
+                  >
+                    <div>
+                      <p className="font-semibold text-sm text-[#2c2c2a]">{s.store_name}</p>
+                      <p className="text-xs text-[#888780] mt-0.5">{s.address}</p>
+                    </div>
+                    <button
+                      onClick={() => handleSelectStore(s)}
+                      disabled={loading}
+                      className="bg-[#0f6e56] text-white text-[13px] font-medium rounded-[8px] px-[16px] py-[8px] cursor-pointer whitespace-nowrap disabled:opacity-60"
+                    >
+                      선택
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        ) : (
+          <Card style={{ maxWidth: 520 }}>
+            <div>
+              <p style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>환영합니다! 3단계면 시작 🎉</p>
+              {storeName && <p style={{ fontSize: 14, color: '#5f5e5a', marginTop: 6 }}>{storeName}</p>}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0f6e56', border: '1px solid #0f6e56', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>✓</div>
+              <div style={{ height: 2, width: 60, background: '#9fe1cb', flexShrink: 0 }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#ef9f27', border: '1px solid #ef9f27', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#633806', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>2</div>
+              <div style={{ height: 2, width: 60, background: '#e5e5e0', flexShrink: 0 }} />
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#fff', border: '1px solid #e5e5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888780', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>3</div>
+            </div>
+
+            <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: 16 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>✓ 매장 연결 완료</p>
+            </div>
+
+            <PrimaryButton onClick={handleQrDownload}>
+              QR PDF 다운로드
+            </PrimaryButton>
+
+            {error && <p className="text-[#d32f2f] text-xs">{error}</p>}
+
+            <button onClick={() => router.push('/')} style={btnOutlineStyle}>
+              대시보드로 이동
+            </button>
+
+            <p className="text-center text-xs text-[#888780]">
+              <Link href="/send-setup" className="text-[#0f6e56] font-medium">
+                발송 설정하기 (다음 단계) →
+              </Link>
+            </p>
+          </Card>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f5f5f5',
-    padding: '1rem',
-  },
-  card: {
-    background: '#fff',
-    borderRadius: 12,
-    padding: '2.5rem 2rem',
-    width: '100%',
-    maxWidth: 440,
-    boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
-  },
-  title: { margin: 0, fontSize: 24, color: '#12787A' },
-  subtitle: { marginTop: 4, marginBottom: 20, color: '#555', fontSize: 14 },
-  form: { display: 'flex', flexDirection: 'column', gap: 10 },
-  input: {
-    padding: '0.75rem 1rem',
-    borderRadius: 8,
-    border: '1px solid #ddd',
-    fontSize: 15,
-    outline: 'none',
-  },
-  button: {
-    padding: '0.85rem',
-    borderRadius: 8,
-    border: 'none',
-    background: '#12787A',
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: 'pointer',
-    width: '100%',
-  },
-  buttonOutline: {
-    padding: '0.75rem',
-    borderRadius: 8,
-    border: '1px solid #12787A',
-    background: 'transparent',
-    color: '#12787A',
-    fontSize: 14,
-    cursor: 'pointer',
-    width: '100%',
-  },
-  error: { color: '#d32f2f', fontSize: 13, marginTop: 8 },
-  emptyBox: {
-    marginTop: 16,
-    padding: '1rem',
-    borderRadius: 8,
-    background: '#fafafa',
-    border: '1px dashed #ddd',
-  },
-  emptyText: { fontSize: 14, color: '#555', margin: '0 0 12px' },
-  resultList: { listStyle: 'none', padding: 0, margin: '16px 0 0', display: 'flex', flexDirection: 'column', gap: 8 },
-  resultItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 1rem',
-    borderRadius: 8,
-    border: '1px solid #e0e0e0',
-  },
-  resultAddr: { margin: '2px 0 0', fontSize: 12, color: '#777' },
-  selectBtn: {
-    padding: '0.4rem 1rem',
-    borderRadius: 6,
-    border: 'none',
-    background: '#12787A',
-    color: '#fff',
-    fontSize: 13,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  },
-  steps: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 },
-  stepDone: { fontSize: 14, color: '#12787A', fontWeight: 600 },
-  stepActive: { fontSize: 15, color: '#111', fontWeight: 700 },
-  stepNext: { fontSize: 13, color: '#aaa' },
-};

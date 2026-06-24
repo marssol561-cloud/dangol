@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
 import Link from "next/link";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminMessagesPage() {
   const user = await getSessionUser();
@@ -15,7 +16,6 @@ export default async function AdminMessagesPage() {
     db.from("send_channels").select("store_link_id, provider, sender_number, connected, setup_step"),
   ]);
 
-  // Aggregate per channel × status
   const aggMap: Record<string, { sent: number; failed: number; pending: number }> = {};
   for (const m of (msgs ?? []) as { channel: string; status: string }[]) {
     if (!aggMap[m.channel]) aggMap[m.channel] = { sent: 0, failed: 0, pending: 0 };
@@ -33,66 +33,67 @@ export default async function AdminMessagesPage() {
     setup_step: number;
   }[];
 
+  const CHANNEL_LABELS: Record<string, string> = {
+    kakao: "알림톡",
+    phone: "문자(SMS)",
+    email: "이메일",
+  };
+
+  const MAIN_CHANNELS = ["kakao", "phone", "email"];
+
   return (
-    <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center gap-4">
-        <Link href="/admin" className="text-gray-400 text-sm">← 대시보드</Link>
-        <h1 className="text-lg font-bold text-gray-900">C4 메시지 / 발송 비용</h1>
-      </header>
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
+      <AppHeader variant="admin" activeItem="발송·비용" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Send volume by channel */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">채널별 발송 현황</h2>
-          {channelRows.length === 0 ? (
-            <p className="text-sm text-gray-400">발송 내역 없음</p>
-          ) : (
-            <div className="space-y-3">
-              {channelRows.map(([ch, stat]) => (
-                <div key={ch} className="bg-white rounded-2xl shadow-sm px-5 py-4">
-                  <p className="font-medium text-gray-800 capitalize">{ch}</p>
-                  <div className="flex gap-6 mt-2">
-                    <div>
-                      <p className="text-xs text-gray-400">성공</p>
-                      <p className="text-lg font-bold text-teal-600">{stat.sent}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">실패</p>
-                      <p className="text-lg font-bold text-red-500">{stat.failed}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">대기</p>
-                      <p className="text-lg font-bold text-gray-400">{stat.pending}</p>
-                    </div>
-                  </div>
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>발송·비용 모니터링</h1>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* 3 channel stat cards */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            {MAIN_CHANNELS.map((ch) => {
+              const stat = aggMap[ch] ?? { sent: 0, failed: 0, pending: 0 };
+              const total = stat.sent + stat.failed;
+              const successRate = total > 0 ? ((stat.sent / total) * 100).toFixed(1) : "—";
+              return (
+                <div key={ch} style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, width: 384, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <p style={{ fontSize: 14, color: '#5f5e5a' }}>{CHANNEL_LABELS[ch] ?? ch}</p>
+                  <p style={{ fontSize: 24, fontWeight: 700, color: '#085041' }}>{stat.sent.toLocaleString()}건</p>
+                  <p style={{ fontSize: 12, color: '#888780' }}>성공 {successRate}%</p>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
+              );
+            })}
+          </div>
 
-        {/* Send channels (cost/balance) */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">발송 채널 설정 현황</h2>
-          {sendCh.length === 0 ? (
-            <p className="text-sm text-gray-400">설정된 채널 없음</p>
-          ) : (
-            <div className="space-y-2">
+          <p style={{ fontSize: 12, color: '#888780' }}>
+            ※ 성공/실패는 솔라피 웹훅 콜백으로 갱신. 발송비는 점주 부담(솔라피 충전).
+          </p>
+
+          {/* Send channel list */}
+          {sendCh.length > 0 && (
+            <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ background: '#f8f7f4', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>제공사</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 100 }}>발신번호</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>진행 단계</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>상태</span>
+              </div>
               {sendCh.map((sc) => (
-                <div key={sc.store_link_id} className="bg-white rounded-2xl shadow-sm px-5 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">{sc.provider} · {sc.sender_number ?? "-"}</p>
-                    <p className="text-xs text-gray-400">setup_step: {sc.setup_step}/4</p>
-                  </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${sc.connected ? "bg-teal-50 text-teal-700" : "bg-gray-100 text-gray-500"}`}>
+                <div key={sc.store_link_id} style={{ background: '#fff', borderTop: '1px solid #e5e5e0', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 2 }}>{sc.provider}</span>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', width: 100 }}>{sc.sender_number ?? "—"}</span>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{sc.setup_step}/4</span>
+                  <span style={{ fontSize: 12, background: sc.connected ? '#e1f5ee' : '#f8f7f4', color: sc.connected ? '#085041' : '#888780', borderRadius: 999, padding: '4px 10px', width: 60, textAlign: 'center' }}>
                     {sc.connected ? "연결됨" : "미연결"}
                   </span>
                 </div>
               ))}
             </div>
           )}
-        </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }

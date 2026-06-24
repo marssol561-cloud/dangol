@@ -2,6 +2,9 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { GRADE_LABEL, type Grade } from "@/lib/grade";
+import AppHeader from "@/app/components/AppHeader";
+import Input from "@/app/components/ui/Input";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 interface CustomerListItem {
   id: string;
@@ -35,10 +38,10 @@ interface CustomerDetail {
   consents: { type: string; agreed: boolean; agreed_at: string }[];
 }
 
-const GRADE_COLORS: Record<string, string> = {
-  vip: "bg-amber-100 text-amber-700",
-  regular: "bg-teal-100 text-teal-700",
-  normal: "bg-gray-100 text-gray-600",
+const GRADE_STYLE: Record<string, { background: string; color: string }> = {
+  vip: { background: '#faeeda', color: '#633806' },
+  regular: { background: '#e1f5ee', color: '#085041' },
+  normal: { background: '#f8f7f4', color: '#5f5e5a' },
 };
 
 function relativeDate(iso: string | null): string {
@@ -51,6 +54,8 @@ function relativeDate(iso: string | null): string {
   if (days < 30) return `${Math.floor(days / 7)}주 전`;
   return `${Math.floor(days / 30)}개월 전`;
 }
+
+const selectCls = "bg-white border border-[#e5e5e0] rounded-lg px-2 py-2 text-sm text-[#2c2c2a] outline-none focus:border-[#0f6e56] flex-1";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerListItem[]>([]);
@@ -106,222 +111,215 @@ export default function CustomersPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-10">
-      <header className="bg-white border-b px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="text-gray-400 text-sm">← 홈</Link>
-          <h1 className="text-lg font-bold text-gray-900">고객 관리</h1>
-        </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="bg-teal-600 text-white text-sm px-3 py-1.5 rounded-lg"
-        >
-          + 직접 등록
-        </button>
-      </header>
+    <div className="min-h-screen bg-[#f8f7f4] flex flex-col">
+      <AppHeader variant="owner" activeItem="고객" />
 
-      <div className="max-w-xl mx-auto px-4 pt-4 space-y-4">
-        {/* Filters */}
-        <div className="flex gap-2">
-          <select
-            value={grade}
-            onChange={(e) => setGrade(e.target.value)}
-            className="flex-1 text-sm border rounded-lg px-2 py-1.5 bg-white"
+      <main className="flex-1 p-8">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>고객 관리</h1>
+          <button
+            onClick={() => setShowAdd(true)}
+            style={{ background: '#0f6e56', color: '#fff', fontSize: 14, fontWeight: 600, padding: '12px 20px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
           >
-            <option value="">등급 전체</option>
-            <option value="vip">VIP</option>
-            <option value="regular">단골</option>
-            <option value="normal">일반</option>
-          </select>
-          <select
-            value={channel}
-            onChange={(e) => setChannel(e.target.value)}
-            className="flex-1 text-sm border rounded-lg px-2 py-1.5 bg-white"
-          >
-            <option value="">채널 전체</option>
-            <option value="phone">전화</option>
-            <option value="email">이메일</option>
-            <option value="kakao">카카오</option>
-          </select>
-          <select
-            value={lastVisitDays}
-            onChange={(e) => setLastVisitDays(e.target.value)}
-            className="flex-1 text-sm border rounded-lg px-2 py-1.5 bg-white"
-          >
-            <option value="">방문일 전체</option>
-            <option value="30">30일 이상</option>
-            <option value="60">60일 이상</option>
-            <option value="90">90일 이상</option>
-          </select>
+            + 고객 수기 등록
+          </button>
         </div>
 
-        {/* List */}
-        {loading ? (
-          <p className="text-center text-sm text-gray-400 py-8">불러오는 중...</p>
-        ) : customers.length === 0 ? (
-          <p className="text-center text-sm text-gray-400 py-8">고객이 없습니다</p>
-        ) : (
-          <div className="space-y-2">
-            {customers.map((c) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Grade filter pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[
+              { value: '', label: '전체' },
+              { value: 'vip', label: 'VIP' },
+              { value: 'regular', label: '단골' },
+              { value: 'normal', label: '일반' },
+            ].map(({ value: v, label }) => (
               <button
-                key={c.id}
-                onClick={() => openDetail(c.id)}
-                className={`w-full bg-white rounded-2xl px-4 py-3.5 shadow-sm text-left flex items-center justify-between ${
-                  selectedId === c.id ? "ring-2 ring-teal-400" : ""
-                }`}
+                key={v}
+                onClick={() => setGrade(v)}
+                style={{ background: grade === v ? '#0f6e56' : '#fff', color: grade === v ? '#fff' : '#5f5e5a', border: `1px solid ${grade === v ? '#0f6e56' : '#e5e5e0'}`, borderRadius: 999, padding: '8px 14px', fontSize: 13, cursor: 'pointer' }}
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-800">{c.name ?? "이름없음"}</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${GRADE_COLORS[c.grade]}`}>
-                      {GRADE_LABEL[c.grade]}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {c.displayContact ?? "-"} · 방문 {c.visit_count}회
-                  </p>
-                </div>
-                <p className="text-xs text-gray-400 shrink-0 ml-2">{relativeDate(c.last_visit_at)}</p>
+                {label}
               </button>
             ))}
+            <select value={channel} onChange={(e) => setChannel(e.target.value)} className={selectCls} style={{ maxWidth: 120 }}>
+              <option value="">채널 전체</option>
+              <option value="phone">전화</option>
+              <option value="email">이메일</option>
+              <option value="kakao">카카오</option>
+            </select>
+            <select value={lastVisitDays} onChange={(e) => setLastVisitDays(e.target.value)} className={selectCls} style={{ maxWidth: 120 }}>
+              <option value="">방문일 전체</option>
+              <option value="30">30일 이상</option>
+              <option value="60">60일 이상</option>
+              <option value="90">90일 이상</option>
+            </select>
           </div>
-        )}
 
-        {/* Detail panel */}
-        {selectedId && (
-          <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
-            {detailLoading ? (
-              <p className="text-sm text-gray-400">상세 정보 로딩 중...</p>
-            ) : detail ? (
-              <>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="font-semibold text-gray-800">{detail.customer.name ?? "이름없음"}</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">{detail.customer.displayContact ?? "-"} · {detail.customer.channel ?? "-"}</p>
-                    <p className="text-xs text-gray-400">
-                      가입 {new Date(detail.customer.created_at).toLocaleDateString("ko-KR")}
-                    </p>
-                  </div>
-                  <span className={`text-sm px-2 py-1 rounded-full ${GRADE_COLORS[detail.customer.grade]}`}>
-                    {detail.customer.gradeLabel}
+          {/* Table card */}
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ background: '#f8f7f4', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>이름</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>연락처</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 1 }}>등급</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 1 }}>방문</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 1 }}>최근 방문</span>
+            </div>
+            {loading ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <p style={{ fontSize: 14, color: '#888780' }}>불러오는 중...</p>
+              </div>
+            ) : customers.length === 0 ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <p style={{ fontSize: 14, color: '#888780' }}>고객이 없습니다</p>
+              </div>
+            ) : (
+              customers.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => openDetail(c.id)}
+                  style={{ background: selectedId === c.id ? '#f8f7f4' : '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16, width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none', borderTop: '1px solid #e5e5e0' }}
+                >
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 2 }}>{c.name ?? "이름없음"}</span>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 2 }}>{c.displayContact ?? "-"}</span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ ...GRADE_STYLE[c.grade], borderRadius: 999, padding: '3px 8px', fontSize: 12, fontWeight: 500 }}>
+                      {GRADE_LABEL[c.grade]}
+                    </span>
                   </span>
-                </div>
+                  <span style={{ fontSize: 14, color: '#2c2c2a', flex: 1 }}>{c.visit_count}회</span>
+                  <span style={{ fontSize: 14, color: '#888780', flex: 1 }}>{relativeDate(c.last_visit_at)}</span>
+                </button>
+              ))
+            )}
+          </div>
 
-                {/* Stamp progress */}
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">스탬프</p>
-                  <div className="flex gap-1 flex-wrap">
-                    {Array.from({ length: detail.stamps.required }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                          i < detail.stamps.current ? "bg-teal-500 text-white" : "bg-gray-100 text-gray-300"
-                        }`}
-                      >
-                        ★
-                      </div>
-                    ))}
+          {/* Detail panel */}
+          {selectedId && (
+            <div style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24, display:'flex', flexDirection:'column', gap:16 }}>
+              {detailLoading ? (
+                <p className="text-sm text-[#888780]">상세 정보 로딩 중...</p>
+              ) : detail ? (
+                <>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="font-semibold text-[#2c2c2a]">{detail.customer.name ?? "이름없음"}</h2>
+                      <p className="text-xs text-[#888780] mt-0.5">{detail.customer.displayContact ?? "-"} · {detail.customer.channel ?? "-"}</p>
+                      <p className="text-xs text-[#888780]">
+                        가입 {new Date(detail.customer.created_at).toLocaleDateString("ko-KR")}
+                      </p>
+                    </div>
+                    <span style={{ ...GRADE_STYLE[detail.customer.grade], borderRadius: 999, padding: '4px 10px', fontSize: 13, fontWeight: 500 }}>
+                      {detail.customer.gradeLabel}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {detail.stamps.current}/{detail.stamps.required}
-                    {detail.stamps.rewardDesc ? ` · ${detail.stamps.rewardDesc}` : ""}
-                  </p>
-                </div>
 
-                {/* Visit timeline */}
-                {detail.visits.length > 0 && (
+                  {/* Stamp progress */}
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">최근 방문</p>
-                    <ul className="space-y-1 max-h-36 overflow-y-auto">
-                      {detail.visits.map((v) => (
-                        <li key={v.id} className="text-xs text-gray-600 flex justify-between">
-                          <span>{new Date(v.visited_at).toLocaleDateString("ko-KR")}</span>
-                          <span className="text-gray-400">+{v.stamp_delta} 스탬프 · {v.source}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Purpose / companion */}
-                {(detail.customer.visit_purpose || detail.customer.companion) && (
-                  <p className="text-xs text-gray-500">
-                    {detail.customer.visit_purpose && <span>목적: {detail.customer.visit_purpose}</span>}
-                    {detail.customer.companion && <span className="ml-2">동반: {detail.customer.companion}</span>}
-                  </p>
-                )}
-
-                {/* Consents */}
-                {detail.consents.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">동의 항목</p>
-                    <div className="flex flex-wrap gap-1">
-                      {detail.consents.map((con) => (
-                        <span key={con.type} className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">
-                          {con.type}
-                        </span>
+                    <p className="text-xs text-[#888780] mb-2">스탬프</p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {Array.from({ length: detail.stamps.required }).map((_, i) => (
+                        <div
+                          key={i}
+                          style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, border: `2px solid ${i < detail.stamps.current ? '#0f6e56' : '#e5e5e0'}`, color: i < detail.stamps.current ? '#0f6e56' : '#e5e5e0', background: i < detail.stamps.current ? '#e1f5ee' : '#fff' }}
+                        >
+                          ★
+                        </div>
                       ))}
                     </div>
+                    <p className="text-xs text-[#888780] mt-1.5">
+                      {detail.stamps.current}/{detail.stamps.required}
+                      {detail.stamps.rewardDesc ? ` · ${detail.stamps.rewardDesc}` : ""}
+                    </p>
                   </div>
-                )}
 
-                {/* Message history */}
-                {detail.messages.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">메시지 이력</p>
-                    <ul className="space-y-1 max-h-28 overflow-y-auto">
-                      {detail.messages.map((m) => (
-                        <li key={m.id} className="text-xs text-gray-600 flex justify-between">
-                          <span>{m.channel} · {m.template_id ?? "직접"}</span>
-                          <span className={`${m.status === "sent" ? "text-teal-500" : "text-gray-400"}`}>
-                            {m.status}
+                  {detail.visits.length > 0 && (
+                    <div>
+                      <p className="text-xs text-[#888780] mb-1.5">최근 방문</p>
+                      <ul className="flex flex-col gap-1 max-h-36 overflow-y-auto">
+                        {detail.visits.map((v) => (
+                          <li key={v.id} className="text-xs text-[#5f5e5a] flex justify-between">
+                            <span>{new Date(v.visited_at).toLocaleDateString("ko-KR")}</span>
+                            <span className="text-[#888780]">+{v.stamp_delta} 스탬프 · {v.source}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {(detail.customer.visit_purpose || detail.customer.companion) && (
+                    <p className="text-xs text-[#5f5e5a]">
+                      {detail.customer.visit_purpose && <span>목적: {detail.customer.visit_purpose}</span>}
+                      {detail.customer.companion && <span className="ml-2">동반: {detail.customer.companion}</span>}
+                    </p>
+                  )}
+
+                  {detail.consents.length > 0 && (
+                    <div>
+                      <p className="text-xs text-[#888780] mb-1.5">동의 항목</p>
+                      <div className="flex flex-wrap gap-1">
+                        {detail.consents.map((con) => (
+                          <span key={con.type} style={{ background: '#e1f5ee', color: '#085041', padding: '2px 8px', borderRadius: 999, fontSize: 12 }}>
+                            {con.type}
                           </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                {/* Memo */}
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">메모</p>
-                  <textarea
-                    value={memo}
-                    onChange={(e) => setMemo(e.target.value)}
-                    rows={3}
-                    placeholder="점주 메모 (고객에게 보이지 않음)"
-                    className="w-full text-sm border rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-teal-400"
-                  />
-                  <div className="flex justify-end mt-1">
-                    <button
-                      onClick={saveMemo}
-                      disabled={memoSaving}
-                      className="text-xs bg-teal-600 text-white px-3 py-1 rounded-lg disabled:opacity-50"
-                    >
-                      {memoSaving ? "저장 중..." : "메모 저장"}
-                    </button>
-                  </div>
-                </div>
+                  {detail.messages.length > 0 && (
+                    <div>
+                      <p className="text-xs text-[#888780] mb-1.5">메시지 이력</p>
+                      <ul className="flex flex-col gap-1 max-h-28 overflow-y-auto">
+                        {detail.messages.map((m) => (
+                          <li key={m.id} className="text-xs text-[#5f5e5a] flex justify-between">
+                            <span>{m.channel} · {m.template_id ?? "직접"}</span>
+                            <span className={m.status === "sent" ? "text-[#085041]" : "text-[#888780]"}>
+                              {m.status}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-                <div className="pt-1">
+                  <div>
+                    <p className="text-xs text-[#888780] mb-1.5">메모</p>
+                    <textarea
+                      value={memo}
+                      onChange={(e) => setMemo(e.target.value)}
+                      rows={3}
+                      placeholder="점주 메모 (고객에게 보이지 않음)"
+                      className="w-full text-sm bg-white border border-[#e5e5e0] rounded-lg px-3 py-2 resize-none outline-none focus:border-[#0f6e56]"
+                    />
+                    <div className="flex justify-end mt-1">
+                      <button
+                        onClick={saveMemo}
+                        disabled={memoSaving}
+                        style={{ fontSize: 12, background: '#0f6e56', color: '#fff', padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', opacity: memoSaving ? 0.5 : 1 }}
+                      >
+                        {memoSaving ? "저장 중..." : "메모 저장"}
+                      </button>
+                    </div>
+                  </div>
+
                   <Link
                     href={`/messages?customerId=${selectedId}`}
-                    className="block text-center text-sm text-teal-600 border border-teal-200 rounded-xl py-2"
+                    style={{ display: 'block', textAlign: 'center', fontSize: 14, color: '#0f6e56', border: '1px solid #9fe1cb', borderRadius: 12, padding: '10px 0', textDecoration: 'none' }}
                   >
                     이 고객에게 소식 보내기
                   </Link>
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-red-400">상세 정보를 불러올 수 없습니다</p>
-            )}
-          </div>
-        )}
-      </div>
+                </>
+              ) : (
+                <p className="text-sm text-[#d32f2f]">상세 정보를 불러올 수 없습니다</p>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
 
-      {/* Manual add modal */}
       {showAdd && <ManualAddModal onClose={() => setShowAdd(false)} onSuccess={fetchList} />}
-    </main>
+    </div>
   );
 }
 
@@ -368,18 +366,18 @@ function ManualAddModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end justify-center z-50" onClick={onClose}>
       <div
-        className="bg-white rounded-t-3xl w-full max-w-xl p-6 pb-10 space-y-4"
+        className="bg-white rounded-t-3xl w-full max-w-xl p-6 pb-10 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-base font-semibold text-gray-800">고객 직접 등록</h2>
+        <h2 className="text-base font-semibold text-[#2c2c2a]">고객 직접 등록</h2>
 
         <div className="flex gap-2">
           {(["phone", "email", "kakao"] as const).map((ch) => (
             <button
               key={ch}
               onClick={() => setChannel(ch)}
-              className={`flex-1 py-2 rounded-xl text-sm font-medium border transition ${
-                channel === ch ? "bg-teal-600 text-white border-teal-600" : "text-gray-500 border-gray-200"
+              className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 cursor-pointer transition-colors ${
+                channel === ch ? "bg-[#0f6e56] text-white border-[#0f6e56]" : "text-[#5f5e5a] border-[#e5e5e0]"
               }`}
             >
               {ch === "phone" ? "전화" : ch === "email" ? "이메일" : "카카오"}
@@ -387,36 +385,30 @@ function ManualAddModal({
           ))}
         </div>
 
-        <input
+        <Input
           type={channel === "email" ? "email" : "text"}
           placeholder={channel === "phone" ? "010-0000-0000" : channel === "email" ? "example@mail.com" : "카카오 ID"}
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
-          className="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-400"
         />
 
-        <input
+        <Input
           type="text"
           placeholder="고객 이름 (선택)"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-teal-400"
         />
 
-        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-          <input type="checkbox" checked={adConsent} onChange={(e) => setAdConsent(e.target.checked)} />
+        <label className="flex items-center gap-2 text-sm text-[#2c2c2a] cursor-pointer">
+          <input type="checkbox" checked={adConsent} onChange={(e) => setAdConsent(e.target.checked)} className="accent-[#0f6e56]" />
           광고성 정보 수신 동의
         </label>
 
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        {error && <p className="text-xs text-[#d32f2f]">{error}</p>}
 
-        <button
-          onClick={submit}
-          disabled={submitting}
-          className="w-full bg-teal-600 text-white py-3 rounded-xl font-medium disabled:opacity-50"
-        >
+        <PrimaryButton onClick={submit} disabled={submitting}>
           {submitting ? "등록 중..." : "등록하기"}
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   );
