@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
   const page = pdf.addPage([400, 520]);
   const fontBoldBytes = fs.readFileSync(path.join(process.cwd(), 'app/api/qr/fonts/Pretendard-Bold.ttf'));
   const fontRegBytes = fs.readFileSync(path.join(process.cwd(), 'app/api/qr/fonts/Pretendard-Regular.ttf'));
-  const font = await pdf.embedFont(fontBoldBytes, { subset: true });
-  const fontReg = await pdf.embedFont(fontRegBytes, { subset: true });
+  const font = await pdf.embedFont(fontBoldBytes, { subset: false });
+  const fontReg = await pdf.embedFont(fontRegBytes, { subset: false });
 
   // Title
   page.drawText('리붐단골', {
