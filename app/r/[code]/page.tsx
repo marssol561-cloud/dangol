@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import Input from "@/app/components/ui/Input";
+import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
 type Step = "loading" | "b1" | "b2" | "b3" | "done" | "error";
 type Channel = "phone" | "kakao" | "email";
@@ -31,6 +33,7 @@ interface CheckInResult {
   grade?: string;
   coupon?: { id: string; code: string; benefit: string; expires_at: string };
 }
+
 
 export default function CustomerPage() {
   const params = useParams<{ code: string }>();
@@ -67,7 +70,6 @@ export default function CustomerPage() {
   useEffect(() => {
     if (!storeCode) return;
 
-    // 1. Load store name
     fetch(`/api/r/${storeCode}/store`)
       .then((r) => r.json())
       .then(async (d) => {
@@ -78,7 +80,6 @@ export default function CustomerPage() {
         }
         setStoreName(d.store_name);
 
-        // 2. Try check-in (returning customer)
         const ciRes = await fetch("/api/checkin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -87,10 +88,8 @@ export default function CustomerPage() {
         const ci: CheckInResult = await ciRes.json();
 
         if (ci.accrued || ci.reason === "too_soon") {
-          // Returning customer — go to B3
           setCheckInResult(ci);
 
-          // Fetch stamps policy
           const [policyRes, couponsRes] = await Promise.all([
             fetch(`/api/stamps-rewards`).catch(() => null),
             fetch(`/api/coupons/mine?store_code=${storeCode}`).catch(() => null),
@@ -106,7 +105,6 @@ export default function CustomerPage() {
 
           setStep("b3");
         } else {
-          // New visitor — B1 flow
           setStep("b1");
         }
       })
@@ -166,21 +164,21 @@ export default function CustomerPage() {
 
   if (step === "loading") {
     return (
-      <main style={styles.container}>
-        <p style={styles.muted}>불러오는 중...</p>
+      <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-5">
+        <p className="text-sm text-[#888780]">불러오는 중...</p>
       </main>
     );
   }
 
   if (step === "error") {
     return (
-      <main style={styles.container}>
-        <p style={styles.error}>{errorMsg || "오류가 발생했습니다."}</p>
+      <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-5">
+        <p className="text-sm text-[#d32f2f]">{errorMsg || "오류가 발생했습니다."}</p>
       </main>
     );
   }
 
-  // ── B3: Stamp board (returning customer) ──────────────────
+  // ── B3: Stamp board ────────────────────────────────────────
   if (step === "b3") {
     const visitCount = checkInResult?.visit_count ?? 0;
     const required = stampsPolicy.required_count;
@@ -188,103 +186,108 @@ export default function CustomerPage() {
     const referLink = `${typeof window !== "undefined" ? window.location.origin : ""}/r/${storeCode}?ref=${encodeURIComponent(document.cookie.replace(/.*dangol_bt=([^;]+).*/, "$1"))}`;
 
     return (
-      <main style={styles.container}>
-        <h1 style={styles.storeName}>{storeName}</h1>
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>단골 스탬프 카드 · {visitCount}번째 방문</p>
+        </header>
 
-        {checkInResult?.accrued ? (
-          <p style={styles.accrualMsg}>🎉 {visitCount}번째 방문입니다!</p>
-        ) : (
-          <p style={styles.muted}>오늘은 이미 방문 도장을 받으셨어요.</p>
-        )}
+        <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {checkInResult?.accrued ? (
+            <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: '12px 16px' }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>🎉 {visitCount}번째 방문입니다!</p>
+            </div>
+          ) : (
+            <p style={{ fontSize: 14, color: '#888780' }}>오늘은 이미 방문 도장을 받으셨어요.</p>
+          )}
 
-        {/* Stamp board */}
-        <div style={styles.stampSection}>
-          <p style={styles.sectionTitle}>스탬프 현황</p>
-          <div style={styles.stampGrid}>
-            {Array.from({ length: required }).map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  ...styles.stamp,
-                  ...(i < visitCount % required ? styles.stampFilled : {}),
-                }}
-              >
-                {i < visitCount % required ? "★" : "☆"}
+          {/* Stamp board */}
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 20 }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#633806', marginBottom: 12 }}>스탬프 현황</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {Array.from({ length: required }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{ width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, background: i < visitCount % required ? '#0f6e56' : '#fff', border: `1px solid ${i < visitCount % required ? '#0f6e56' : '#e5e5e0'}`, color: i < visitCount % required ? '#fff' : '#888780' }}
+                >
+                  {i < visitCount % required ? "★" : "☆"}
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: '#888780' }}>
+              {visitCount}번 방문 · {required - (visitCount % required)}번 더 오시면 리워드!
+            </p>
+          </div>
+
+          {/* New coupon */}
+          {newCoupon && (
+            <div style={{ background: '#e1f5ee', border: '2px dashed #0f6e56', borderRadius: 12, padding: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>재방문 쿠폰이 발급되었습니다!</p>
+              <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: 4, color: '#0f6e56' }}>{newCoupon.code}</p>
+              <p style={{ fontSize: 14, color: '#085041' }}>{newCoupon.benefit}</p>
+              <p style={{ fontSize: 12, color: '#888780' }}>사장님께 이 코드를 보여주세요.</p>
+            </div>
+          )}
+
+          {/* My coupon wallet */}
+          {myCoupons.length > 0 && (
+            <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 20 }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: '#2c2c2a', marginBottom: 12 }}>내 쿠폰</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {myCoupons.map((c) => (
+                  <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, borderBottom: '1px solid #e5e5e0' }}>
+                    <p style={{ fontSize: 16, fontWeight: 700, letterSpacing: 4, color: '#085041' }}>{c.code}</p>
+                    <p style={{ fontSize: 12, color: '#888780' }}>{c.benefit}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <p style={styles.muted}>
-            {visitCount}번 방문 · {required - (visitCount % required)}번 더 오시면 리워드!
-          </p>
-        </div>
+            </div>
+          )}
 
-        {/* New coupon */}
-        {newCoupon && (
-          <div style={styles.couponBox}>
-            <p style={styles.sectionTitle}>재방문 쿠폰이 발급되었습니다!</p>
-            <span style={styles.couponCode}>{newCoupon.code}</span>
-            <p style={styles.muted}>{newCoupon.benefit}</p>
-            <p style={styles.muted}>사장님께 이 코드를 보여주세요.</p>
+          {/* Refer-a-friend */}
+          <div style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: 16 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: '#085041', marginBottom: 4 }}>친구 초대 링크</p>
+            <p style={{ fontSize: 12, color: '#5f5e5a', marginBottom: 12 }}>친구가 이 링크로 가입하면 둘 다 쿠폰을 받아요!</p>
+            <button
+              style={{ border: '1px solid #e5e5e0', borderRadius: 8, padding: '12px 20px', color: '#5f5e5a', background: '#fff', fontSize: 14, cursor: 'pointer', width: '100%', boxSizing: 'border-box' }}
+              onClick={() => {
+                navigator.clipboard?.writeText(referLink).then(() => alert("링크 복사됨!")).catch(() => {});
+              }}
+            >
+              링크 복사
+            </button>
           </div>
-        )}
-
-        {/* My coupon wallet */}
-        {myCoupons.length > 0 && (
-          <div style={styles.walletSection}>
-            <p style={styles.sectionTitle}>내 쿠폰</p>
-            {myCoupons.map((c) => (
-              <div key={c.code} style={styles.walletCoupon}>
-                <span style={styles.couponCodeSmall}>{c.code}</span>
-                <span style={styles.muted}>{c.benefit}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Refer-a-friend */}
-        <div style={styles.referSection}>
-          <p style={styles.sectionTitle}>친구 초대 링크</p>
-          <p style={styles.muted}>친구가 이 링크로 가입하면 둘 다 쿠폰을 받아요!</p>
-          <button
-            style={styles.copyBtn}
-            onClick={() => {
-              navigator.clipboard?.writeText(referLink).then(() => alert("링크 복사됨!")).catch(() => {});
-            }}
-          >
-            링크 복사
-          </button>
         </div>
       </main>
     );
   }
 
-  // ── B1: Veil question ──────────────────────────────────────
+  // ── B1: Visit purpose question ─────────────────────────────
   if (step === "b1") {
     return (
-      <main style={styles.container}>
-        <h1 style={styles.storeName}>{storeName}</h1>
-        <h2 style={styles.question}>오늘 어떤 날이세요?</h2>
-        <div style={styles.purposeGrid}>
-          {VISIT_PURPOSES.map((p) => (
-            <button
-              key={p}
-              style={{
-                ...styles.purposeBtn,
-                ...(visitPurpose === p ? styles.purposeBtnActive : {}),
-              }}
-              onClick={() => setVisitPurpose(p)}
-            >
-              {p}
-            </button>
-          ))}
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>단골 쿠폰 등록</p>
+        </header>
+
+        <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#2c2c2a' }}>오늘 어떤 날이세요?</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {VISIT_PURPOSES.map((p) => (
+              <button
+                key={p}
+                onClick={() => setVisitPurpose(p)}
+                style={{ background: visitPurpose === p ? '#e1f5ee' : '#fff', border: `1px solid ${visitPurpose === p ? '#9fe1cb' : '#e5e5e0'}`, color: visitPurpose === p ? '#085041' : '#2c2c2a', borderRadius: 12, padding: 16, fontSize: 15, fontWeight: 500, cursor: 'pointer' }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+          <PrimaryButton disabled={!visitPurpose} onClick={handleB1Next}>
+            다음
+          </PrimaryButton>
         </div>
-        <button
-          style={{ ...styles.primaryBtn, opacity: visitPurpose ? 1 : 0.4 }}
-          disabled={!visitPurpose}
-          onClick={handleB1Next}
-        >
-          다음
-        </button>
       </main>
     );
   }
@@ -292,228 +295,94 @@ export default function CustomerPage() {
   // ── B2: Contact + Consent ──────────────────────────────────
   if (step === "b2") {
     return (
-      <main style={styles.container}>
-        <h1 style={styles.storeName}>{storeName}</h1>
-        <h2 style={styles.question}>쿠폰을 받으실 연락처를 입력해 주세요</h2>
-        <form onSubmit={handleB2Submit} style={styles.form}>
-          <div style={styles.channelRow}>
-            {(["phone", "kakao", "email"] as Channel[]).map((ch) => (
-              <button
-                key={ch}
-                type="button"
-                style={{
-                  ...styles.channelBtn,
-                  ...(channel === ch ? styles.channelBtnActive : {}),
-                }}
-                onClick={() => setChannel(ch)}
-              >
-                {CHANNEL_LABELS[ch]}
-              </button>
-            ))}
-          </div>
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>쿠폰 받을 곳</p>
+        </header>
 
-          <input
-            style={styles.input}
-            type={channel === "email" ? "email" : "text"}
-            placeholder={CHANNEL_PLACEHOLDERS[channel]}
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            required
-          />
+        <div style={{ flex: 1, padding: 20 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#2c2c2a', marginBottom: 16 }}>쿠폰을 받으실 연락처를 입력해 주세요</h2>
+          <form onSubmit={handleB2Submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {(["phone", "kakao", "email"] as Channel[]).map((ch) => (
+                <button
+                  key={ch}
+                  type="button"
+                  onClick={() => setChannel(ch)}
+                  style={{ flex: 1, background: channel === ch ? '#0f6e56' : '#fff', color: channel === ch ? '#fff' : '#5f5e5a', border: `1px solid ${channel === ch ? '#0f6e56' : '#e5e5e0'}`, borderRadius: 999, padding: '10px 16px', fontSize: 13, cursor: 'pointer' }}
+                >
+                  {CHANNEL_LABELS[ch]}
+                </button>
+              ))}
+            </div>
 
-          <input
-            style={styles.input}
-            type="text"
-            placeholder="이름 (선택)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+            <Input
+              type={channel === "email" ? "email" : "text"}
+              placeholder={CHANNEL_PLACEHOLDERS[channel]}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+            />
 
-          <fieldset style={styles.fieldset}>
-            <legend style={styles.legend}>동의 항목</legend>
-            {[
-              { key: "required", label: "[필수] 개인정보 수집·이용 동의" },
-              { key: "thirdparty", label: "[선택] 제3자 제공 동의 (잇다랩)" },
-              { key: "ad_sms", label: "[선택] 광고 수신 동의 (문자)" },
-              { key: "ad_kakao", label: "[선택] 광고 수신 동의 (카카오)" },
-              { key: "ad_email", label: "[선택] 광고 수신 동의 (이메일)" },
-            ].map(({ key, label }) => (
-              <label key={key} style={styles.consentLabel}>
-                <input
-                  type="checkbox"
-                  checked={consents[key as keyof typeof consents]}
-                  onChange={(e) => setConsents({ ...consents, [key]: e.target.checked })}
-                />
-                &nbsp;{label}
-              </label>
-            ))}
-          </fieldset>
+            <Input
+              type="text"
+              placeholder="이름 (선택)"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-          {errorMsg && <p style={styles.error}>{errorMsg}</p>}
+            <div style={{ background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a' }}>동의 항목</p>
+              {[
+                { key: "required", label: "[필수] 개인정보 수집·이용 동의" },
+                { key: "thirdparty", label: "[선택] 제3자 제공 동의 (잇다랩)" },
+                { key: "ad_sms", label: "[선택] 광고 수신 동의 (문자)" },
+                { key: "ad_kakao", label: "[선택] 광고 수신 동의 (카카오)" },
+                { key: "ad_email", label: "[선택] 광고 수신 동의 (이메일)" },
+              ].map(({ key, label }) => (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={consents[key as keyof typeof consents]}
+                    onChange={(e) => setConsents({ ...consents, [key]: e.target.checked })}
+                    className="accent-[#0f6e56]"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
 
-          <button
-            type="submit"
-            style={{ ...styles.primaryBtn, opacity: submitting ? 0.6 : 1 }}
-            disabled={submitting}
-          >
-            {submitting ? "제출 중..." : "쿠폰 받기"}
-          </button>
-        </form>
+            {errorMsg && <p style={{ fontSize: 12, color: '#d32f2f' }}>{errorMsg}</p>}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{ background: '#ef9f27', color: '#633806', borderRadius: 8, padding: '16px 20px', fontWeight: 600, fontSize: 16, border: 'none', cursor: 'pointer', width: '100%', boxSizing: 'border-box', opacity: submitting ? 0.6 : 1 }}
+            >
+              {submitting ? "제출 중..." : "쿠폰 받기"}
+            </button>
+          </form>
+        </div>
       </main>
     );
   }
 
   // ── Done: First coupon issued ──────────────────────────────
   return (
-    <main style={styles.container}>
-      <h1 style={styles.storeName}>{storeName}</h1>
-      <h2 style={styles.question}>환영합니다! 🎉</h2>
-      <p style={styles.muted}>첫 방문 쿠폰이 발급되었습니다.</p>
-      <div style={styles.couponBox}>
-        <span style={styles.couponCode}>{couponCode}</span>
+    <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+        <p style={{ fontSize: 12, color: '#e1f5ee' }}>단골 쿠폰 등록 완료</p>
+      </header>
+      <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#2c2c2a' }}>환영합니다! 🎉</h2>
+        <p style={{ fontSize: 14, color: '#5f5e5a' }}>첫 방문 쿠폰이 발급되었습니다.</p>
+        <div style={{ background: '#e1f5ee', border: '2px dashed #0f6e56', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+          <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: 4, color: '#0f6e56' }}>{couponCode}</p>
+        </div>
+        <p style={{ fontSize: 14, color: '#888780', textAlign: 'center' }}>사장님께 이 코드를 보여주세요.</p>
       </div>
-      <p style={styles.muted}>사장님께 이 코드를 보여주세요.</p>
     </main>
   );
 }
-
-// ── Inline styles ──────────────────────────────────────────────
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    maxWidth: 480,
-    margin: "0 auto",
-    padding: "40px 24px",
-    fontFamily: "sans-serif",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-  },
-  storeName: { fontSize: 22, fontWeight: 700, margin: 0 },
-  question: { fontSize: 18, fontWeight: 600, margin: 0 },
-  accrualMsg: { fontSize: 18, fontWeight: 700, color: "#005555", margin: 0 },
-  sectionTitle: { fontSize: 15, fontWeight: 700, margin: 0 },
-  purposeGrid: { display: "flex", flexWrap: "wrap", gap: 10 },
-  purposeBtn: {
-    padding: "10px 18px",
-    borderRadius: 24,
-    border: "1.5px solid #ccc",
-    background: "#fff",
-    cursor: "pointer",
-    fontSize: 15,
-  },
-  purposeBtnActive: {
-    border: "1.5px solid #008080",
-    background: "#e6f7f7",
-    color: "#005555",
-    fontWeight: 600,
-  },
-  primaryBtn: {
-    padding: "14px 0",
-    borderRadius: 10,
-    border: "none",
-    background: "#008080",
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: 700,
-    cursor: "pointer",
-    width: "100%",
-  },
-  channelRow: { display: "flex", gap: 8 },
-  channelBtn: {
-    flex: 1,
-    padding: "10px 0",
-    borderRadius: 8,
-    border: "1.5px solid #ccc",
-    background: "#fff",
-    cursor: "pointer",
-    fontSize: 14,
-  },
-  channelBtnActive: {
-    border: "1.5px solid #008080",
-    background: "#e6f7f7",
-    color: "#005555",
-    fontWeight: 700,
-  },
-  input: {
-    padding: "12px 14px",
-    borderRadius: 8,
-    border: "1.5px solid #ddd",
-    fontSize: 15,
-    width: "100%",
-    boxSizing: "border-box" as const,
-  },
-  fieldset: { border: "1px solid #eee", borderRadius: 8, padding: 14 },
-  legend: { fontWeight: 600, fontSize: 14, padding: "0 6px" },
-  consentLabel: { display: "block", fontSize: 14, marginBottom: 8 },
-  form: { display: "flex", flexDirection: "column", gap: 12 },
-  couponBox: {
-    background: "#f0fafa",
-    border: "2px dashed #008080",
-    borderRadius: 12,
-    padding: "20px 0",
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    alignItems: "center",
-  },
-  couponCode: { fontSize: 28, fontWeight: 800, letterSpacing: 4, color: "#005555" },
-  couponCodeSmall: { fontSize: 18, fontWeight: 700, letterSpacing: 2, color: "#005555" },
-  muted: { color: "#666", fontSize: 14, margin: 0 },
-  error: { color: "#c00", fontSize: 14, margin: 0 },
-  stampSection: {
-    background: "#f9f9f9",
-    borderRadius: 12,
-    padding: 16,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
-  stampGrid: { display: "flex", flexWrap: "wrap", gap: 8 },
-  stamp: {
-    width: 36,
-    height: 36,
-    borderRadius: "50%",
-    border: "2px solid #ccc",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 18,
-    color: "#ccc",
-  },
-  stampFilled: { border: "2px solid #008080", color: "#008080", background: "#e6f7f7" },
-  walletSection: {
-    background: "#f9f9f9",
-    borderRadius: 12,
-    padding: 16,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
-  walletCoupon: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "8px 0",
-    borderBottom: "1px solid #eee",
-  },
-  referSection: {
-    background: "#fffbf0",
-    border: "1px solid #f5c518",
-    borderRadius: 12,
-    padding: 16,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
-  copyBtn: {
-    padding: "10px 0",
-    borderRadius: 8,
-    border: "none",
-    background: "#f5c518",
-    color: "#333",
-    fontSize: 14,
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-};

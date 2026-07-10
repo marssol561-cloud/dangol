@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
 import Link from "next/link";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminChannelsPage() {
   const user = await getSessionUser();
@@ -50,74 +51,54 @@ export default async function AdminChannelsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center gap-4">
-        <Link href="/admin" className="text-gray-400 text-sm">← 대시보드</Link>
-        <h1 className="text-lg font-bold text-gray-900">C7 채널 모니터링</h1>
-        {supportTargets.length > 0 && (
-          <span className="ml-auto bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
-            지원 대상 {supportTargets.length}개
-          </span>
-        )}
-      </header>
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
+      <AppHeader variant="admin" activeItem="채널 연결" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Support targets */}
-        {supportTargets.length > 0 && (
-          <section>
-            <h2 className="text-sm font-semibold text-red-600 mb-3">⚠ 미완료 설정 (support 대상)</h2>
-            <div className="space-y-2">
-              {supportTargets.map((s) => {
-                const ch = channelMap[s.id];
-                return (
-                  <div key={s.id} className="bg-red-50 border border-red-100 rounded-2xl px-5 py-3">
-                    <p className="text-sm font-medium text-red-800">{s.store_name ?? "-"}</p>
-                    <p className="text-xs text-red-500 mt-0.5">
-                      {s.store_code} · setup_step {ch?.setup_step ?? 0}/4
-                      {ch ? ` · ${ch.provider}` : " · 채널 없음"}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>점주 채널 연결 모니터링</h1>
+          <p style={{ fontSize: 13, color: '#5f5e5a' }}>점주별 발송 채널(A9) 연결 상태 · 미완료 점주 지원 대상</p>
 
-        {/* All stores */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">전체 매장 채널 상태</h2>
           {storeList.length === 0 ? (
-            <p className="text-sm text-gray-400">매장 없음</p>
+            <p style={{ textAlign: 'center', fontSize: 14, color: '#888780', paddingTop: 48 }}>매장 없음</p>
           ) : (
-            <div className="space-y-2">
+            <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ background: '#f8f7f4', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', flex: 2 }}>매장명</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>카카오 채널</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>솔라피 연결</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 80 }}>진행 단계</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>상태</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a', width: 60 }}>지원</span>
+              </div>
               {storeList.map((s) => {
                 const ch = channelMap[s.id];
                 const isComplete = ch && ch.setup_step >= 4;
+                const needsSupport = !ch || ch.setup_step < 4;
+                const kakaoConnected = ch?.provider === "kakao" && ch.connected;
+                const solapiConnected = ch?.provider === "solapi" && ch.connected;
                 return (
-                  <div key={s.id} className="bg-white rounded-2xl shadow-sm px-5 py-3 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{s.store_name ?? "-"}</p>
-                      <p className="text-xs text-gray-400">{s.store_code}</p>
+                  <div key={s.id} style={{ background: '#fff', borderTop: '1px solid #e5e5e0', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ flex: 2 }}>
+                      <p style={{ fontSize: 14, color: '#2c2c2a' }}>{s.store_name ?? "—"}</p>
+                      <p style={{ fontSize: 12, color: '#888780' }}>{s.store_code}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {ch ? (
-                        <>
-                          <span className="text-xs text-gray-400">{ch.provider} · step {ch.setup_step}/4</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${isComplete ? "bg-teal-50 text-teal-700" : "bg-amber-50 text-amber-600"}`}>
-                            {ch.connected ? "연결됨" : "미연결"}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">미설정</span>
-                      )}
-                    </div>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{kakaoConnected ? "완료" : "미완료"}</span>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{solapiConnected ? "완료" : ch && ch.setup_step > 1 ? "진행중" : "미완료"}</span>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{ch ? `${ch.setup_step}/4` : "0/4"}</span>
+                    <span style={{ fontSize: 14, color: '#2c2c2a', width: 60 }}>{isComplete ? "정상" : needsSupport ? "막힘" : "대기"}</span>
+                    <span style={{ fontSize: 14, width: 60 }}>
+                      {needsSupport ? (
+                        <Link href={`/admin/stores/${s.id}`} style={{ color: '#0f6e56', textDecoration: 'none' }}>지원 &gt;</Link>
+                      ) : "—"}
+                    </span>
                   </div>
                 );
               })}
             </div>
           )}
-        </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }

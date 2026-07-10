@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
 import Link from "next/link";
+import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminSystemPage() {
   const user = await getSessionUser();
@@ -43,75 +44,54 @@ export default async function AdminSystemPage() {
     { name: "SOLAPI", href: "https://app.solapi.com", desc: "문자 발송" },
   ];
 
+  const statusCards = [
+    { name: "Sentry 모니터링", desc: `스키마 v${schemaVersion} · 관리자 ${adminCount ?? 0}명`, href: "https://sentry.io" },
+    { name: "도구창 카드", desc: "Supabase · Vercel · SOLAPI", href: "https://supabase.com/dashboard" },
+    { name: "발송 큐", desc: `감사 로그 ${(auditCount ?? 0).toLocaleString()}건 누적`, href: "https://app.solapi.com" },
+  ];
+
   return (
-    <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center gap-4">
-        <Link href="/admin" className="text-gray-400 text-sm">← 대시보드</Link>
-        <h1 className="text-lg font-bold text-gray-900">C6 시스템</h1>
-      </header>
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
+      <AppHeader variant="admin" activeItem="시스템" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* System info */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">시스템 정보</h2>
-          <div className="bg-white rounded-2xl shadow-sm px-5 py-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">스키마 버전</span>
-              <span className="font-mono font-medium">{schemaVersion}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">관리자 수</span>
-              <span className="font-medium">{adminCount ?? 0}명</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">감사 로그 건수</span>
-              <span className="font-medium">{(auditCount ?? 0).toLocaleString()}건</span>
-            </div>
-          </div>
-        </section>
+      <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>시스템·운영</h1>
 
-        {/* Tools */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">운영 도구</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {tools.map((t) => (
+          {/* 3 status cards */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            {statusCards.map((card) => (
               <a
-                key={t.name}
-                href={t.href}
+                key={card.name}
+                href={card.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white rounded-2xl shadow-sm px-4 py-3 hover:bg-gray-50 transition"
+                style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, width: 384, display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}
               >
-                <p className="text-sm font-medium text-teal-700">{t.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{t.desc}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0f6e56', flexShrink: 0 }} />
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#2c2c2a' }}>{card.name}</p>
+                </div>
+                <p style={{ fontSize: 13, color: '#5f5e5a' }}>{card.desc}</p>
               </a>
             ))}
           </div>
-        </section>
 
-        {/* Recent audit logs */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">최근 감사 로그</h2>
-          {auditRows.length === 0 ? (
-            <p className="text-sm text-gray-400">감사 로그 없음</p>
-          ) : (
-            <div className="space-y-2">
-              {auditRows.map((a, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm px-4 py-3 text-xs text-gray-600 flex justify-between">
-                  <span>
-                    <span className="font-medium">{a.action}</span>
-                    {" → "}{a.target}
-                    {a.count != null ? ` (${a.count}건)` : ""}
-                  </span>
-                  <span className="text-gray-400 shrink-0 ml-2">
-                    {new Date(a.created_at).toLocaleString("ko-KR")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
+          {/* System log */}
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: '#2c2c2a' }}>시스템 로그</p>
+            {auditRows.length === 0 ? (
+              <p style={{ fontSize: 13, color: '#888780' }}>감사 로그 없음</p>
+            ) : (
+              auditRows.map((a, i) => (
+                <p key={i} style={{ fontSize: 13, color: '#5f5e5a' }}>
+                  {new Date(a.created_at).toLocaleString("ko-KR")} · {a.action}{a.target ? ` → ${a.target}` : ""}{a.count != null ? ` (${a.count}건)` : ""}
+                </p>
+              ))
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
