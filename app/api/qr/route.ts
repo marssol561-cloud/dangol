@@ -1,8 +1,11 @@
+import fs from 'fs';
+import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/auth.server';
 import { getServerClient } from '@/lib/dangolDb';
 import QRCode from 'qrcode';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 
 const QR_BASE_URL = 'https://dangol.revum.net/r';
 
@@ -43,9 +46,12 @@ export async function GET(request: NextRequest) {
 
   // Build PDF
   const pdf = await PDFDocument.create();
+  pdf.registerFontkit(fontkit);
   const page = pdf.addPage([400, 520]);
-  const font = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const fontReg = await pdf.embedFont(StandardFonts.Helvetica);
+  const fontBoldBytes = fs.readFileSync(path.join(process.cwd(), 'app/api/qr/fonts/Pretendard-Bold.ttf'));
+  const fontRegBytes = fs.readFileSync(path.join(process.cwd(), 'app/api/qr/fonts/Pretendard-Regular.ttf'));
+  const font = await pdf.embedFont(fontBoldBytes, { subset: true });
+  const fontReg = await pdf.embedFont(fontRegBytes, { subset: true });
 
   // Title
   page.drawText('리붐단골', {
