@@ -11,7 +11,7 @@ export default async function OwnerDashboardPage() {
 
   const db = getServerClient();
 
-  const [monthly, consent, effect, cards, sendChRow] = await Promise.all([
+  const [monthly, consent, effect, cards, sendChRow, storeLinkRow] = await Promise.all([
     monthlyStats(ctx.storeLinkId),
     consentRate(ctx.storeLinkId),
     messageEffect(ctx.storeLinkId),
@@ -21,12 +21,20 @@ export default async function OwnerDashboardPage() {
       .select("setup_step, connected")
       .eq("store_link_id", ctx.storeLinkId)
       .maybeSingle(),
+    db
+      .from("store_links")
+      .select("store_code")
+      .eq("id", ctx.storeLinkId)
+      .maybeSingle(),
   ]);
 
   const sendChannel = (sendChRow.data as { setup_step: number; connected: boolean } | null) ?? {
     setup_step: 0,
     connected: false,
   };
+
+  const storeCode = (storeLinkRow.data as { store_code: string } | null)?.store_code ?? null;
+  const qrHref = storeCode ? `/api/qr?code=${storeCode}` : "/settings";
 
   const isEmpty = monthly.newCustomers === 0 && monthly.cumulativeRegulars === 0;
 
@@ -48,7 +56,7 @@ export default async function OwnerDashboardPage() {
                 <p style={{ fontSize: 12, color: '#5f5e5a' }}>QR 코드를 출력해 카운터에 붙여두세요</p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Link href="/api/qr" style={{ background: '#0f6e56', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>QR 다운로드</Link>
+                <Link href={qrHref} style={{ background: '#0f6e56', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>QR 다운로드</Link>
                 <Link href="/settings" style={{ fontSize: 12, color: '#888780', textDecoration: 'underline' }}>매장 설정</Link>
               </div>
             </div>
