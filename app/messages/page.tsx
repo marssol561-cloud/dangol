@@ -95,10 +95,9 @@ function MessagesPageInner() {
       <AppHeader variant="owner" activeItem="소식 보내기" />
 
       <main className="flex-1 p-8">
-        <div className="w-full max-w-7xl mx-auto">
-        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">소식 보내기</h1>
+        <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h1 className="text-2xl font-semibold text-[#2c2c2a]">소식 보내기</h1>
 
-        <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[#5f5e5a]">고객 세그먼트</label>
@@ -148,7 +147,6 @@ function MessagesPageInner() {
               )}
             </div>
           )}
-        </div>
         </div>
       </main>
     </div>
