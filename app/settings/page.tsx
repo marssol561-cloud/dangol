@@ -23,6 +23,7 @@ export default async function SettingsPage() {
       <AppHeader variant="owner" activeItem="설정" />
 
       <main className="flex-1 p-8">
+        <div className="w-full max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link href="/" className="text-[#888780] text-sm">← 홈</Link>
           <h1 className="text-2xl font-semibold text-[#2c2c2a]">설정</h1>
@@ -96,6 +97,7 @@ export default async function SettingsPage() {
               </Link>
             ))}
           </div>
+        </div>
         </div>
       </main>
     </div>

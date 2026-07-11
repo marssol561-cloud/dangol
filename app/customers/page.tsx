@@ -115,6 +115,7 @@ export default function CustomersPage() {
       <AppHeader variant="owner" activeItem="고객" />
 
       <main className="flex-1 p-8">
+        <div className="w-full max-w-7xl mx-auto">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>고객 관리</h1>
           <button
@@ -315,6 +316,7 @@ export default function CustomersPage() {
               )}
             </div>
           )}
+        </div>
         </div>
       </main>
 
