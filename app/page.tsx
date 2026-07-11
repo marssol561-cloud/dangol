@@ -43,6 +43,7 @@ export default async function OwnerDashboardPage() {
       <AppHeader variant="owner" activeItem="대시보드" />
 
       <main style={{ flex: 1, padding: 32 }}>
+        <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, color: '#2c2c2a' }}>대시보드</h1>
         </div>
@@ -140,6 +141,7 @@ export default async function OwnerDashboardPage() {
               </Link>
             </span>
           )}
+        </div>
         </div>
       </main>
     </div>

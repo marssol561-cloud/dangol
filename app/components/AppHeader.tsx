@@ -81,19 +81,21 @@ export default function AppHeader(props: AppHeaderProps) {
   }
 
   return (
-    <header className="bg-[#0f6e56] h-16 flex items-center justify-between px-8 shrink-0">
-      <span className="font-bold text-lg text-white">리붐단골</span>
-      <nav className="flex items-center gap-6">
-        {ownerNavItems.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`text-sm text-white ${props.activeItem === label ? "font-semibold" : "font-normal"}`}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
+    <header className="bg-[#0f6e56] h-16 flex items-center px-8 shrink-0">
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
+        <span className="font-bold text-lg text-white">리붐단골</span>
+        <nav className="flex items-center gap-6">
+          {ownerNavItems.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`text-sm text-white ${props.activeItem === label ? "font-semibold" : "font-normal"}`}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }
