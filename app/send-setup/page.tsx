@@ -93,10 +93,9 @@ export default function SendSetupPage() {
       <AppHeader variant="owner" activeItem="설정" />
 
       <main className="flex-1 p-8">
-        <div className="w-full max-w-7xl mx-auto">
-        <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">메시지 발송 설정</h1>
-
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
+          <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">메시지 발송 설정</h1>
+
           {/* Circle progress tracker */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
             {STEPS.map((s, i) => (
@@ -189,7 +188,6 @@ export default function SendSetupPage() {
               <p className="text-sm text-[#085041] mt-1">메시지 발송 기능을 사용할 수 있습니다.</p>
             </div>
           )}
-        </div>
         </div>
       </main>
     </div>
