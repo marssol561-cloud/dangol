@@ -96,7 +96,7 @@ export default function SendSetupPage() {
         <div className="w-full max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold text-[#2c2c2a] mb-6">메시지 발송 설정</h1>
 
-        <div style={{ maxWidth: 560 }}>
+        <div style={{ maxWidth: 560, margin: '0 auto' }}>
           {/* Circle progress tracker */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
             {STEPS.map((s, i) => (

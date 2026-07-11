@@ -29,7 +29,7 @@ export default async function SettingsPage() {
           <h1 className="text-2xl font-semibold text-[#2c2c2a]">설정</h1>
         </div>
 
-        <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Store info */}
           <section style={{ background:'#fff', border:'1px solid #e5e5e0', borderRadius:12, padding:24 }}>
             <h2 className="text-base font-semibold text-[#2c2c2a] mb-4">매장 정보</h2>
