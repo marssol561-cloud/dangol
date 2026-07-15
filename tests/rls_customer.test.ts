@@ -77,6 +77,7 @@ async function createOwnerWithLink(tag: string) {
       grade: "normal",
       visit_count: 0,
       browser_token: `bt_${tag}`,
+      unsub_token: crypto.randomUUID(),
     })
     .select("id")
     .single();

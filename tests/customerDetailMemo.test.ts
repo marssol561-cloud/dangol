@@ -42,6 +42,7 @@ beforeAll(async () => {
       visit_count: 3,
       last_visit_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
+      unsub_token: crypto.randomUUID(),
     })
     .select("id")
     .single();

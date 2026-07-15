@@ -76,6 +76,7 @@ describe("test_customer_create", () => {
         grade: "normal",
         visit_count: 0,
         browser_token: "testtoken123",
+        unsub_token: crypto.randomUUID(),
       })
       .select("id, phone_hash, phone_enc, visit_purpose")
       .single();

@@ -43,18 +43,21 @@ async function setupStoreWithCustomers() {
   const { data: vip } = await admin.from("customers").insert({
     store_link_id: storeLinkId, grade: "vip", visit_count: 15,
     last_visit_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    unsub_token: crypto.randomUUID(),
   }).select("id").single();
 
   // Regular customer
   const { data: regular } = await admin.from("customers").insert({
     store_link_id: storeLinkId, grade: "regular", visit_count: 5,
     last_visit_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    unsub_token: crypto.randomUUID(),
   }).select("id").single();
 
   // Churn customer — 70 days ago
   const { data: churn } = await admin.from("customers").insert({
     store_link_id: storeLinkId, grade: "normal", visit_count: 2,
     last_visit_at: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000).toISOString(),
+    unsub_token: crypto.randomUUID(),
   }).select("id").single();
 
   return {

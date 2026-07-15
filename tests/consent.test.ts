@@ -56,6 +56,7 @@ async function setupOwnerLinkCustomer() {
       grade: "normal",
       visit_count: 0,
       browser_token: "bt_consent",
+      unsub_token: crypto.randomUUID(),
     })
     .select("id")
     .single();

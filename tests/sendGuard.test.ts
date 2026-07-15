@@ -30,8 +30,8 @@ async function setupBase() {
     .select("id").single();
   const storeLinkId = (link as { id: string }).id;
 
-  const { data: c1 } = await admin.from("customers").insert({ store_link_id: storeLinkId, grade: "normal" }).select("id").single();
-  const { data: c2 } = await admin.from("customers").insert({ store_link_id: storeLinkId, grade: "normal" }).select("id").single();
+  const { data: c1 } = await admin.from("customers").insert({ store_link_id: storeLinkId, grade: "normal", unsub_token: crypto.randomUUID() }).select("id").single();
+  const { data: c2 } = await admin.from("customers").insert({ store_link_id: storeLinkId, grade: "normal", unsub_token: crypto.randomUUID() }).select("id").single();
   const cust1 = (c1 as { id: string }).id;
   const cust2 = (c2 as { id: string }).id;
 

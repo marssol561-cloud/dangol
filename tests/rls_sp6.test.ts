@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 import { hashPII, encryptPII } from "@/lib/crypto";
+import { expectedSchemaVersion } from "./setup";
 
 const DANGOL_DB_URL = process.env.DANGOL_DB_URL!;
 const DANGOL_DB_SERVICE_ROLE_KEY = process.env.DANGOL_DB_SERVICE_ROLE_KEY!;
@@ -48,7 +49,7 @@ beforeAll(async () => {
   // Create customer in owner's store
   const { data: c1 } = await admin
     .from("customers")
-    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 3, last_visit_at: new Date().toISOString(), created_at: new Date().toISOString() })
+    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 3, last_visit_at: new Date().toISOString(), created_at: new Date().toISOString(), unsub_token: crypto.randomUUID() })
     .select("id")
     .single();
   customerId = (c1 as { id: string }).id;
@@ -64,7 +65,7 @@ beforeAll(async () => {
   // Customer in store 2
   const { data: c2 } = await admin
     .from("customers")
-    .insert({ store_link_id: storeLinkId2, grade: "normal", visit_count: 1, last_visit_at: new Date().toISOString(), created_at: new Date().toISOString() })
+    .insert({ store_link_id: storeLinkId2, grade: "normal", visit_count: 1, last_visit_at: new Date().toISOString(), created_at: new Date().toISOString(), unsub_token: crypto.randomUUID() })
     .select("id")
     .single();
   otherCustomerId = (c2 as { id: string }).id;
@@ -128,11 +129,11 @@ describe("owner — UPDATE own customers", () => {
   });
 });
 
-describe("007 migration — schema_version", () => {
-  it("schema_version is 007", async () => {
+describe("app_meta — schema_version", () => {
+  it("schema_version matches latest migration file", async () => {
     const admin = adminClient();
     const { data } = await admin.from("app_meta").select("value").eq("key", "schema_version").single();
-    expect((data as { value: string }).value).toBe("007");
+    expect((data as { value: string }).value).toBe(expectedSchemaVersion());
   });
 
   it("customers table has memo column", async () => {

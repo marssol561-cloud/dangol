@@ -74,6 +74,7 @@ describe("test_returning_match", () => {
         grade: "normal",
         visit_count: 0,
         browser_token: "token_first",
+        unsub_token: crypto.randomUUID(),
       })
       .select("id")
       .single();

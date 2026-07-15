@@ -102,6 +102,7 @@ describe("RLS SP4 — anon denied on all SP4 tables", () => {
       grade: "normal",
       visit_count: 0,
       browser_token: `btrlsv1_${Date.now()}`,
+      unsub_token: crypto.randomUUID(),
     }).select("id").single();
 
     // Create customer for store2
@@ -113,6 +114,7 @@ describe("RLS SP4 — anon denied on all SP4 tables", () => {
       grade: "normal",
       visit_count: 0,
       browser_token: `btrlsv2_${Date.now()}`,
+      unsub_token: crypto.randomUUID(),
     }).select("id").single();
 
     // Insert visits for both stores via service_role
