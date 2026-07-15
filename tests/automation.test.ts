@@ -43,6 +43,7 @@ async function setupAutomationEnv() {
     grade: "normal",
     phone_enc: encryptPII("01099998888"),
     last_visit_at: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000).toISOString(),
+    unsub_token: crypto.randomUUID(),
   }).select("id").single();
   const customerId = (c as { id: string }).id;
 

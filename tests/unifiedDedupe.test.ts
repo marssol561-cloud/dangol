@@ -59,8 +59,8 @@ beforeAll(async () => {
 
   // One customer per store, same phone
   const [{ data: c1 }, { data: c2 }] = await Promise.all([
-    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0 }).select("id").single(),
-    db.from("customers").insert({ store_link_id: store2Id, grade: "normal", visit_count: 0 }).select("id").single(),
+    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }).select("id").single(),
+    db.from("customers").insert({ store_link_id: store2Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }).select("id").single(),
   ]);
   customer1Id = (c1 as { id: string }).id;
   customer2Id = (c2 as { id: string }).id;

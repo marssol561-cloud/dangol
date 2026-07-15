@@ -55,11 +55,11 @@ beforeAll(async () => {
 
   // Insert 3 customers in store1, 2 in store2
   await Promise.all([
-    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0 }),
-    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0 }),
-    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0 }),
-    db.from("customers").insert({ store_link_id: store2Id, grade: "normal", visit_count: 0 }),
-    db.from("customers").insert({ store_link_id: store2Id, grade: "normal", visit_count: 0 }),
+    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }),
+    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }),
+    db.from("customers").insert({ store_link_id: store1Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }),
+    db.from("customers").insert({ store_link_id: store2Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }),
+    db.from("customers").insert({ store_link_id: store2Id, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() }),
   ]);
 });
 

@@ -61,6 +61,7 @@ async function createCustomer(storeLinkId: string, browserToken: string) {
       grade: "normal",
       visit_count: 0,
       browser_token: browserToken,
+      unsub_token: crypto.randomUUID(),
     })
     .select("id")
     .single();

@@ -43,6 +43,7 @@ async function setupFallbackEnv() {
     phone_enc: encryptPII("01012345678"),
     email_enc: encryptPII("test@example.com"),
     last_visit_at: new Date().toISOString(),
+    unsub_token: crypto.randomUUID(),
   }).select("id").single();
   const customerId = (c as { id: string }).id;
 

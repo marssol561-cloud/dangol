@@ -50,6 +50,7 @@ beforeAll(async () => {
       phone_enc: encryptPII(phone),
       last_visit_at: new Date().toISOString(),
       created_at: new Date(Date.now() - 90 * 86400000).toISOString(),
+      unsub_token: crypto.randomUUID(),
     },
     {
       store_link_id: storeLinkId,
@@ -59,6 +60,7 @@ beforeAll(async () => {
       email_enc: encryptPII("test@example.com"),
       last_visit_at: new Date(Date.now() - 10 * 86400000).toISOString(),
       created_at: new Date(Date.now() - 60 * 86400000).toISOString(),
+      unsub_token: crypto.randomUUID(),
     },
     {
       store_link_id: storeLinkId,
@@ -66,6 +68,7 @@ beforeAll(async () => {
       visit_count: 3,
       last_visit_at: new Date(Date.now() - 70 * 86400000).toISOString(),
       created_at: new Date(Date.now() - 70 * 86400000).toISOString(),
+      unsub_token: crypto.randomUUID(),
     },
   ];
   await admin.from("customers").insert(rows);
@@ -77,6 +80,7 @@ beforeAll(async () => {
     visit_count: 1,
     last_visit_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
+    unsub_token: crypto.randomUUID(),
   });
 });
 

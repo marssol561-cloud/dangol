@@ -38,7 +38,7 @@ beforeAll(async () => {
   // Customer WITH thirdparty consent
   const { data: c1 } = await db
     .from("customers")
-    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0 })
+    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() })
     .select("id")
     .single();
   customerWithConsent = (c1 as { id: string }).id;
@@ -46,7 +46,7 @@ beforeAll(async () => {
   // Customer WITHOUT thirdparty consent
   const { data: c2 } = await db
     .from("customers")
-    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0 })
+    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() })
     .select("id")
     .single();
   customerWithoutConsent = (c2 as { id: string }).id;

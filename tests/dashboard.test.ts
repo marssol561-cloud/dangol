@@ -44,7 +44,7 @@ beforeAll(async () => {
   // Old customer (created before this month)
   const { data: c1 } = await admin
     .from("customers")
-    .insert({ store_link_id: storeLinkId, grade: "regular", visit_count: 25, last_visit_at: thirtyDaysAgo, created_at: sixtyFiveDaysAgo })
+    .insert({ store_link_id: storeLinkId, grade: "regular", visit_count: 25, last_visit_at: thirtyDaysAgo, created_at: sixtyFiveDaysAgo, unsub_token: crypto.randomUUID() })
     .select("id")
     .single();
   customerId1 = (c1 as { id: string }).id;
@@ -52,7 +52,7 @@ beforeAll(async () => {
   // New customer this month
   const { data: c2 } = await admin
     .from("customers")
-    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 1, last_visit_at: now.toISOString(), created_at: monthStart })
+    .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 1, last_visit_at: now.toISOString(), created_at: monthStart, unsub_token: crypto.randomUUID() })
     .select("id")
     .single();
   customerId2 = (c2 as { id: string }).id;

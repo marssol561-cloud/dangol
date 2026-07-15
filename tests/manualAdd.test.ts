@@ -62,6 +62,7 @@ async function doManualAdd(
     grade: "normal",
     visit_count: 0,
     visit_purpose: "직접등록",
+    unsub_token: crypto.randomUUID(),
     [`${channel}_hash`]: hash,
     [`${channel}_enc`]: enc,
   };
