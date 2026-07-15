@@ -3,6 +3,7 @@ import Link from "next/link";
 const ownerNavItems = [
   { href: "/", label: "대시보드" },
   { href: "/customers", label: "고객" },
+  { href: "/events", label: "이벤트" },
   { href: "/stamps", label: "스탬프·쿠폰" },
   { href: "/messages", label: "소식 보내기" },
   { href: "/settings", label: "설정" },
