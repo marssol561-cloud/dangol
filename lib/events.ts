@@ -3,6 +3,7 @@ import { resolveSegment, type SegmentType } from "./segments";
 import { filterNonDeleted, isNightBlocked } from "./sendGuard";
 import { sendToSegment } from "./messaging";
 import type { TemplateId } from "./templates";
+import { hashPII, encryptPII } from "./crypto";
 
 export type EventRow = {
   id: string;
@@ -401,4 +402,241 @@ export async function sendAnnounce(
   if (isNightBlocked()) return { error: "night_blocked" };
 
   return sendToSegment(storeLinkId, segment, templateId, templateVars);
+}
+
+// ============================================================
+// SP-E3: customer event participation (B1/B2/B3) — pending-only join,
+// no coupon issuance here (issuance = staff approval, SP-E4).
+// ============================================================
+
+type Channel = "phone" | "kakao" | "email";
+
+function generateEventToken(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export interface CreateParticipationInput {
+  storeCode: string;
+  channel: Channel;
+  identifier: string;
+  name?: string;
+  visitPurpose?: string;
+  companion?: string;
+  consents: { required: boolean; thirdparty: boolean; ad_sms: boolean; ad_kakao: boolean; ad_email: boolean };
+  browserToken?: string;
+}
+
+export type ParticipationError = "no_active_event" | "consent_required" | "thirdparty_required" | "store_not_found";
+
+/**
+ * Creates a PENDING event_participations row only — never issues a coupon
+ * (coupon issuance happens on staff approval, SP-E4). Idempotent per
+ * UNIQUE(event_id, customer_id): a repeat call returns the existing row's
+ * status instead of erroring or duplicating.
+ */
+export async function createParticipation(
+  db: SupabaseClient,
+  input: CreateParticipationInput
+): Promise<{ status: ParticipationRow["status"]; browserToken: string } | { error: ParticipationError }> {
+  const { data: storeLink } = await db.from("store_links").select("id").eq("store_code", input.storeCode).maybeSingle();
+  if (!storeLink) return { error: "store_not_found" };
+  const storeLinkId = (storeLink as { id: string }).id;
+
+  const resolution = await resolveStoreEvent(db, storeLinkId);
+  if (resolution.state !== "active") return { error: "no_active_event" };
+  const event = resolution.event;
+
+  const hash = hashPII(input.identifier, input.channel);
+  const hashCol = `${input.channel}_hash`;
+
+  const { data: existingCustomer } = await db
+    .from("customers")
+    .select("id, browser_token")
+    .eq("store_link_id", storeLinkId)
+    .eq(hashCol, hash)
+    .maybeSingle();
+
+  let customerId: string;
+  let browserToken: string;
+
+  if (existingCustomer) {
+    const ec = existingCustomer as { id: string; browser_token: string | null };
+    customerId = ec.id;
+    browserToken = ec.browser_token ?? input.browserToken ?? generateEventToken();
+  } else {
+    const enc = encryptPII(input.identifier);
+    browserToken = input.browserToken ?? generateEventToken();
+
+    const insertRow: Record<string, unknown> = {
+      store_link_id: storeLinkId,
+      visit_purpose: input.visitPurpose ?? null,
+      companion: input.companion ?? null,
+      name: input.name ?? null,
+      browser_token: browserToken,
+      unsub_token: generateEventToken(),
+      grade: "normal",
+      visit_count: 0,
+    };
+    insertRow[hashCol] = hash;
+    insertRow[`${input.channel}_enc`] = enc;
+
+    const { data: newCustomer, error: insertErr } = await db.from("customers").insert(insertRow).select("id").single();
+    if (insertErr || !newCustomer) throw insertErr ?? new Error("createParticipation customer insert failed");
+    customerId = (newCustomer as { id: string }).id;
+  }
+
+  // Both mandatory consents — from existing agreed rows OR this submission.
+  const { data: existingConsentRows } = await db
+    .from("consents")
+    .select("type")
+    .eq("customer_id", customerId)
+    .in("type", ["required", "thirdparty"])
+    .eq("agreed", true)
+    .is("revoked_at", null);
+
+  const has = new Set((existingConsentRows ?? []).map((r: { type: string }) => r.type));
+  const hasRequired = has.has("required") || input.consents.required;
+  const hasThirdparty = has.has("thirdparty") || input.consents.thirdparty;
+
+  if (!hasRequired) return { error: "consent_required" };
+  if (!hasThirdparty) return { error: "thirdparty_required" };
+
+  const now = new Date().toISOString();
+  const toInsert: Array<{ customer_id: string; store_link_id: string; type: string; agreed: boolean; agreed_at: string }> = [];
+  const allConsents: [string, boolean][] = [
+    ["required", input.consents.required],
+    ["thirdparty", input.consents.thirdparty],
+    ["ad_sms", input.consents.ad_sms],
+    ["ad_kakao", input.consents.ad_kakao],
+    ["ad_email", input.consents.ad_email],
+  ];
+  for (const [type, agreed] of allConsents) {
+    if (agreed && !has.has(type)) {
+      toInsert.push({ customer_id: customerId, store_link_id: storeLinkId, type, agreed: true, agreed_at: now });
+    }
+  }
+  if (toInsert.length > 0) await db.from("consents").insert(toInsert);
+
+  // Idempotent per UNIQUE(event_id, customer_id) — check first, then handle a concurrent-insert race.
+  const { data: existingParticipation } = await db
+    .from("event_participations")
+    .select("status")
+    .eq("event_id", event.id)
+    .eq("customer_id", customerId)
+    .maybeSingle();
+
+  if (existingParticipation) {
+    return { status: (existingParticipation as { status: ParticipationRow["status"] }).status, browserToken };
+  }
+
+  const { data: participation, error: partErr } = await db
+    .from("event_participations")
+    .insert({
+      event_id: event.id,
+      customer_id: customerId,
+      store_link_id: storeLinkId,
+      status: "pending",
+      condition_answer: input.visitPurpose ?? null,
+    })
+    .select("status")
+    .single();
+
+  if (partErr || !participation) {
+    // Unique-violation race: another request created the row first — return its status instead of erroring.
+    const { data: retry } = await db
+      .from("event_participations")
+      .select("status")
+      .eq("event_id", event.id)
+      .eq("customer_id", customerId)
+      .maybeSingle();
+    if (retry) return { status: (retry as { status: ParticipationRow["status"] }).status, browserToken };
+    throw partErr ?? new Error("createParticipation insert failed");
+  }
+
+  return { status: (participation as { status: ParticipationRow["status"] }).status, browserToken };
+}
+
+export interface ParticipationStatusResult {
+  participation: { status: ParticipationRow["status"]; coupon?: { code: string; benefit: string | null } } | null;
+  existingConsents: { required: boolean; thirdparty: boolean };
+}
+
+/**
+ * Looks up the customer's MOST RECENT event participation at this store
+ * (not re-gated on "is an event still active") — a participation that
+ * pushed an event over its issue_cap flips resolveStoreEvent to 'closed',
+ * which would otherwise make status polling go blind at the exact moment
+ * a customer is waiting to see their own approval.
+ */
+export async function getParticipationStatus(
+  db: SupabaseClient,
+  storeCode: string,
+  lookup: { browserToken: string } | { channel: Channel; identifier: string }
+): Promise<ParticipationStatusResult | { error: "store_not_found" }> {
+  const { data: storeLink } = await db.from("store_links").select("id").eq("store_code", storeCode).maybeSingle();
+  if (!storeLink) return { error: "store_not_found" };
+  const storeLinkId = (storeLink as { id: string }).id;
+
+  let customerQuery = db.from("customers").select("id").eq("store_link_id", storeLinkId);
+  customerQuery =
+    "browserToken" in lookup
+      ? customerQuery.eq("browser_token", lookup.browserToken)
+      : customerQuery.eq(`${lookup.channel}_hash`, hashPII(lookup.identifier, lookup.channel));
+
+  const { data: customer } = await customerQuery.maybeSingle();
+  if (!customer) {
+    return { participation: null, existingConsents: { required: false, thirdparty: false } };
+  }
+  const customerId = (customer as { id: string }).id;
+
+  const { data: consentRows } = await db
+    .from("consents")
+    .select("type")
+    .eq("customer_id", customerId)
+    .in("type", ["required", "thirdparty"])
+    .eq("agreed", true)
+    .is("revoked_at", null);
+  const has = new Set((consentRows ?? []).map((r: { type: string }) => r.type));
+  const existingConsents = { required: has.has("required"), thirdparty: has.has("thirdparty") };
+
+  const { data: participationRow } = await db
+    .from("event_participations")
+    .select("status, coupon_id")
+    .eq("store_link_id", storeLinkId)
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!participationRow) return { participation: null, existingConsents };
+
+  const p = participationRow as { status: ParticipationRow["status"]; coupon_id: string | null };
+  let coupon: { code: string; benefit: string | null } | undefined;
+  if (p.coupon_id) {
+    const { data: couponRow } = await db.from("coupons").select("code, benefit").eq("id", p.coupon_id).maybeSingle();
+    if (couponRow) coupon = couponRow as { code: string; benefit: string | null };
+  }
+
+  return { participation: { status: p.status, ...(coupon ? { coupon } : {}) }, existingConsents };
+}
+
+/** Preannounce events not yet started — for the B3 "다가오는 이벤트" banner. */
+export async function listUpcomingPreannounce(
+  db: SupabaseClient,
+  storeLinkId: string
+): Promise<{ id: string; title: string; start_at: string | null }[]> {
+  const nowIso = new Date().toISOString();
+  const { data, error } = await db
+    .from("events")
+    .select("id, title, start_at")
+    .eq("store_link_id", storeLinkId)
+    .eq("type", "preannounce")
+    .eq("status", "scheduled")
+    .or(`start_at.is.null,start_at.gt.${nowIso}`)
+    .order("start_at", { ascending: true });
+
+  if (error || !data) return [];
+  return data as { id: string; title: string; start_at: string | null }[];
 }
