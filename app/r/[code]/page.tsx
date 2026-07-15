@@ -9,6 +9,12 @@ type Step = "loading" | "b1" | "b2" | "b3" | "done" | "error";
 type Channel = "phone" | "kakao" | "email";
 type VisitPurpose = "혼밥" | "친구" | "연인" | "가족" | "기념일";
 
+type ActiveEvent = { id: string; type: "onsite" | "preannounce"; title: string; description: string | null; reward_benefit: string | null };
+type EventJoinStep = "b1" | "b2" | "b3";
+type EventConsents = { required: boolean; thirdparty: boolean; ad_sms: boolean; ad_kakao: boolean; ad_email: boolean };
+type Participation = { status: string; coupon?: { code: string; benefit: string | null } };
+type UpcomingPreannounce = { id: string; title: string; start_at: string | null };
+
 const VISIT_PURPOSES: VisitPurpose[] = ["혼밥", "친구", "연인", "가족", "기념일"];
 
 const CHANNEL_LABELS: Record<Channel, string> = {
@@ -67,6 +73,27 @@ export default function CustomerPage() {
   const [stampsPolicy, setStampsPolicy] = useState<StampsPolicy>({ required_count: 10 });
   const [myCoupons, setMyCoupons] = useState<MyCoupon[]>([]);
 
+  // ── Event gate state (SP-E3) — overlay in front of the 평시 flow, does not alter it ──
+  const [activeEvent, setActiveEvent] = useState<ActiveEvent | null>(null);
+  const [eventClosedNotice, setEventClosedNotice] = useState(false);
+  const [eventGateDismissed, setEventGateDismissed] = useState(false);
+  const [eventJoinStep, setEventJoinStep] = useState<EventJoinStep>("b1");
+  const [eventChannel, setEventChannel] = useState<Channel>("phone");
+  const [eventIdentifier, setEventIdentifier] = useState("");
+  const [eventName, setEventName] = useState("");
+  const [eventConsents, setEventConsents] = useState<EventConsents>({
+    required: false,
+    thirdparty: false,
+    ad_sms: false,
+    ad_kakao: false,
+    ad_email: false,
+  });
+  const [existingConsents, setExistingConsents] = useState({ required: false, thirdparty: false });
+  const [eventSubmitting, setEventSubmitting] = useState(false);
+  const [eventError, setEventError] = useState("");
+  const [participation, setParticipation] = useState<Participation | null>(null);
+  const [upcomingPreannounce, setUpcomingPreannounce] = useState<UpcomingPreannounce[]>([]);
+
   useEffect(() => {
     if (!storeCode) return;
 
@@ -79,6 +106,12 @@ export default function CustomerPage() {
           return;
         }
         setStoreName(d.store_name);
+
+        if (d.event) {
+          setActiveEvent(d.event as ActiveEvent);
+        } else if (d.eventClosed) {
+          setEventClosedNotice(true);
+        }
 
         const ciRes = await fetch("/api/checkin", {
           method: "POST",
@@ -118,6 +151,95 @@ export default function CustomerPage() {
     if (!visitPurpose) return;
     setStep("b2");
   }
+
+  // ── Event flow handlers (SP-E3) ────────────────────────────
+  async function handleEventJoinStart() {
+    setEventError("");
+    try {
+      const res = await fetch(`/api/r/${storeCode}/event-status`);
+      if (res.ok) {
+        const data = await res.json();
+        setUpcomingPreannounce(data.upcomingPreannounce ?? []);
+        if (data.participation) {
+          setParticipation(data.participation);
+          setEventJoinStep("b3");
+          return;
+        }
+        setExistingConsents(data.existingConsents ?? { required: false, thirdparty: false });
+      }
+    } catch {
+      // non-fatal — proceed to b2 with default (unconsented) state
+    }
+    setEventJoinStep("b2");
+  }
+
+  async function handleEventJoinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!eventIdentifier.trim()) {
+      setEventError("연락처를 입력해 주세요.");
+      return;
+    }
+    setEventSubmitting(true);
+    setEventError("");
+    try {
+      const res = await fetch(`/api/r/${storeCode}/event-join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: eventChannel,
+          identifier: eventIdentifier.trim(),
+          name: eventName.trim() || undefined,
+          consents: {
+            required: existingConsents.required || eventConsents.required,
+            thirdparty: existingConsents.thirdparty || eventConsents.thirdparty,
+            ad_sms: eventConsents.ad_sms,
+            ad_kakao: eventConsents.ad_kakao,
+            ad_email: eventConsents.ad_email,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "no_active_event") {
+          setEventGateDismissed(true);
+          return;
+        }
+        setEventError(
+          data.error === "consent_required"
+            ? "개인정보 수집·이용 동의(필수)를 체크해 주세요."
+            : data.error === "thirdparty_required"
+            ? "제3자 제공 동의(필수)를 체크해 주세요."
+            : data.error ?? "제출에 실패했습니다."
+        );
+        return;
+      }
+      setParticipation({ status: data.status });
+      setEventJoinStep("b3");
+    } catch {
+      setEventError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+      setEventSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    if (eventJoinStep !== "b3" || !activeEvent || participation?.status === "approved") return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/r/${storeCode}/event-status`);
+        if (res.ok) {
+          const data = await res.json();
+          setUpcomingPreannounce(data.upcomingPreannounce ?? []);
+          if (data.participation) setParticipation(data.participation);
+        }
+      } catch {
+        // ignore transient poll errors — next tick retries
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [eventJoinStep, activeEvent, storeCode, participation?.status]);
+
+  const showEventGate = !!activeEvent && !eventGateDismissed;
 
   async function handleB2Submit(e: React.FormEvent) {
     e.preventDefault();
@@ -174,6 +296,175 @@ export default function CustomerPage() {
     return (
       <main className="min-h-screen bg-[#f8f7f4] flex items-center justify-center p-5">
         <p className="text-sm text-[#d32f2f]">{errorMsg || "오류가 발생했습니다."}</p>
+      </main>
+    );
+  }
+
+  // ── Event B1: intro card + 참여 CTA (SP-E3) ─────────────────
+  if (showEventGate && eventJoinStep === "b1") {
+    return (
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>오늘의 이벤트</p>
+        </header>
+
+        <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ background: '#faeeda', border: '1px solid #f0d9a8', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={{ alignSelf: 'flex-start', background: '#0f6e56', color: '#fff', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 600 }}>
+              {activeEvent!.type === "onsite" ? "현장 이벤트" : "예고 이벤트"}
+            </span>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#633806' }}>{activeEvent!.title}</h2>
+            {activeEvent!.description && <p style={{ fontSize: 14, color: '#5f5e5a' }}>{activeEvent!.description}</p>}
+            {activeEvent!.reward_benefit && (
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#633806' }}>혜택: {activeEvent!.reward_benefit}</p>
+            )}
+          </div>
+
+          <PrimaryButton onClick={handleEventJoinStart}>이벤트 참여하기</PrimaryButton>
+
+          <button
+            onClick={() => setEventGateDismissed(true)}
+            style={{ background: 'transparent', border: 'none', color: '#888780', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 8 }}
+          >
+            이벤트 없이 스탬프만 받을게요
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Event B2: identity + both-mandatory consents (SP-E3) ────
+  if (showEventGate && eventJoinStep === "b2") {
+    const needsRequired = !existingConsents.required;
+    const needsThirdparty = !existingConsents.thirdparty;
+    const needsAnyConsent = needsRequired || needsThirdparty;
+
+    return (
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>{activeEvent!.title}</p>
+        </header>
+
+        <div style={{ flex: 1, padding: 20 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#2c2c2a', marginBottom: 16 }}>참여 정보를 입력해 주세요</h2>
+          <form onSubmit={handleEventJoinSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {(["phone", "kakao", "email"] as Channel[]).map((ch) => (
+                <button
+                  key={ch}
+                  type="button"
+                  onClick={() => setEventChannel(ch)}
+                  style={{ flex: 1, background: eventChannel === ch ? '#0f6e56' : '#fff', color: eventChannel === ch ? '#fff' : '#5f5e5a', border: `1px solid ${eventChannel === ch ? '#0f6e56' : '#e5e5e0'}`, borderRadius: 999, padding: '10px 16px', fontSize: 13, cursor: 'pointer' }}
+                >
+                  {CHANNEL_LABELS[ch]}
+                </button>
+              ))}
+            </div>
+
+            <Input
+              type={eventChannel === "email" ? "email" : "text"}
+              placeholder={CHANNEL_PLACEHOLDERS[eventChannel]}
+              value={eventIdentifier}
+              onChange={(e) => setEventIdentifier(e.target.value)}
+              required
+            />
+
+            <Input
+              type="text"
+              placeholder="이름 (선택)"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+            />
+
+            {needsAnyConsent ? (
+              <div style={{ background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#5f5e5a' }}>동의 항목 (이벤트 참여 시 개인정보·제3자 제공 모두 필수)</p>
+                {needsRequired && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={eventConsents.required} onChange={(e) => setEventConsents({ ...eventConsents, required: e.target.checked })} className="accent-[#0f6e56]" />
+                    [필수] 개인정보 수집·이용 동의
+                  </label>
+                )}
+                {needsThirdparty && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={eventConsents.thirdparty} onChange={(e) => setEventConsents({ ...eventConsents, thirdparty: e.target.checked })} className="accent-[#0f6e56]" />
+                    [필수] 제3자 제공 동의 (잇다랩)
+                  </label>
+                )}
+                {[
+                  { key: "ad_sms", label: "[선택] 광고 수신 동의 (문자)" },
+                  { key: "ad_kakao", label: "[선택] 광고 수신 동의 (카카오)" },
+                  { key: "ad_email", label: "[선택] 광고 수신 동의 (이메일)" },
+                ].map(({ key, label }) => (
+                  <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#2c2c2a', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={eventConsents[key as keyof EventConsents]}
+                      onChange={(e) => setEventConsents({ ...eventConsents, [key]: e.target.checked })}
+                      className="accent-[#0f6e56]"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontSize: 12, color: '#888780' }}>이미 필수 동의를 완료하셨어요. 바로 참여할 수 있어요.</p>
+            )}
+
+            {eventError && <p style={{ fontSize: 12, color: '#d32f2f' }}>{eventError}</p>}
+
+            <PrimaryButton disabled={eventSubmitting}>
+              {eventSubmitting ? "제출 중..." : "이벤트 참여하기"}
+            </PrimaryButton>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Event B3: pending / approved (SP-E3, coupon shown only after staff approval) ──
+  if (showEventGate && eventJoinStep === "b3") {
+    const status = participation?.status ?? "pending";
+    const approved = status === "approved" && !!participation?.coupon;
+
+    return (
+      <main style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <header style={{ background: '#0f6e56', padding: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{storeName}</p>
+          <p style={{ fontSize: 12, color: '#e1f5ee' }}>{activeEvent?.title ?? "이벤트 참여"}</p>
+        </header>
+
+        <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {approved ? (
+            <div style={{ background: '#e1f5ee', border: '2px dashed #0f6e56', borderRadius: 12, padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>승인되었습니다! 🎉</p>
+              <p style={{ fontSize: 28, fontWeight: 900, letterSpacing: 4, color: '#0f6e56' }}>{participation!.coupon!.code}</p>
+              {participation!.coupon!.benefit && <p style={{ fontSize: 14, color: '#085041' }}>{participation!.coupon!.benefit}</p>}
+              <p style={{ fontSize: 12, color: '#888780' }}>사장님께 이 코드를 보여주세요.</p>
+            </div>
+          ) : (
+            <div style={{ background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ fontSize: 18, fontWeight: 700, color: '#2c2c2a' }}>직원 확인 중입니다</p>
+              <p style={{ fontSize: 13, color: '#888780' }}>잠시만 기다려 주세요. 직원이 확인하면 자동으로 갱신됩니다.</p>
+            </div>
+          )}
+
+          {upcomingPreannounce.length > 0 && (
+            <div style={{ background: '#faeeda', border: '1px solid #f0d9a8', borderRadius: 12, padding: 16 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#633806', marginBottom: 8 }}>다가오는 이벤트</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {upcomingPreannounce.map((e) => (
+                  <p key={e.id} style={{ fontSize: 13, color: '#633806' }}>
+                    {e.title}
+                    {e.start_at ? ` · ${new Date(e.start_at).toLocaleDateString("ko-KR")}` : ""}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     );
   }
@@ -272,6 +563,11 @@ export default function CustomerPage() {
         </header>
 
         <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {eventClosedNotice && (
+            <p style={{ fontSize: 12, color: '#888780', background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 8, padding: '8px 12px' }}>
+              이벤트가 마감되었습니다.
+            </p>
+          )}
           <h2 style={{ fontSize: 20, fontWeight: 700, color: '#2c2c2a' }}>오늘 어떤 날이세요?</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {VISIT_PURPOSES.map((p) => (
