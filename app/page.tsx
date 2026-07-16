@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getOwnerContext } from "@/lib/ownerAuth";
 import { monthlyStats, consentRate, messageEffect, todayCards, type TodayCard } from "@/lib/dashboard";
+import { getEventBadges } from "@/lib/events";
 import { getServerClient } from "@/lib/dangolDb";
 import AppHeader from "@/app/components/AppHeader";
 
@@ -11,7 +12,7 @@ export default async function OwnerDashboardPage() {
 
   const db = getServerClient();
 
-  const [monthly, consent, effect, cards, sendChRow, storeLinkRow] = await Promise.all([
+  const [monthly, consent, effect, cards, sendChRow, storeLinkRow, eventBadges] = await Promise.all([
     monthlyStats(ctx.storeLinkId),
     consentRate(ctx.storeLinkId),
     messageEffect(ctx.storeLinkId),
@@ -26,6 +27,7 @@ export default async function OwnerDashboardPage() {
       .select("store_code")
       .eq("id", ctx.storeLinkId)
       .maybeSingle(),
+    getEventBadges(db, ctx.storeLinkId),
   ]);
 
   const sendChannel = (sendChRow.data as { setup_step: number; connected: boolean } | null) ?? {
@@ -61,6 +63,19 @@ export default async function OwnerDashboardPage() {
                 <Link href="/settings" style={{ fontSize: 12, color: '#888780', textDecoration: 'underline' }}>매장 설정</Link>
               </div>
             </div>
+          )}
+
+          {/* Event badge — hidden when no active events and no participation today */}
+          {(eventBadges.activeEventCount > 0 || eventBadges.todayParticipationCount > 0) && (
+            <Link
+              href="/events"
+              style={{ background: '#e1f5ee', border: '1px solid #9fe1cb', borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none' }}
+            >
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>
+                🎯 진행 중 이벤트 {eventBadges.activeEventCount}건 · 오늘 이벤트 참여 {eventBadges.todayParticipationCount}명
+              </p>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#085041' }}>이벤트 관리 →</span>
+            </Link>
           )}
 
           {/* 6 KPI stat cards — always visible */}

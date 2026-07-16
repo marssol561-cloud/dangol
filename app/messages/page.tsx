@@ -6,7 +6,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import AppHeader from "@/app/components/AppHeader";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
 
-type Segment = "grade_vip" | "grade_regular" | "grade_normal" | "churn" | "anniversary";
+type Segment = "grade_vip" | "grade_regular" | "grade_normal" | "churn" | "anniversary" | `tag:${string}`;
 type TemplateId = "coupon_issued" | "stamp_reward" | "returning_reminder" | "churn_reengage" | "anniversary";
 
 const SEGMENTS: { value: Segment; label: string }[] = [
@@ -25,11 +25,15 @@ const TEMPLATES: { value: TemplateId; label: string }[] = [
   { value: "anniversary", label: "기념일 메시지" },
 ];
 
-function parseSegmentParam(s: string | null): { segment: Segment | null; segmentType: string; grade?: string } {
+function parseSegmentParam(s: string | null): { segment: Segment | null; segmentType: string; grade?: string; tag?: string } {
   if (!s) return { segment: null, segmentType: "grade" };
   if (s.startsWith("grade_")) return { segment: s as Segment, segmentType: "grade", grade: s.replace("grade_", "") };
   if (s === "churn") return { segment: "churn", segmentType: "churn" };
   if (s === "anniversary") return { segment: "anniversary", segmentType: "anniversary" };
+  if (s.startsWith("tag:")) {
+    const tag = decodeURIComponent(s.slice(4));
+    return { segment: `tag:${tag}`, segmentType: "tag", tag };
+  }
   return { segment: null, segmentType: "grade" };
 }
 
@@ -42,6 +46,7 @@ function MessagesPageInner() {
 
   const [storeLinkId, setStoreLinkId] = useState<string>("");
   const [segment, setSegment] = useState<Segment | "">(initSegment.segment ?? "");
+  const isTagPrefill = initSegment.segmentType === "tag";
   const [templateId, setTemplateId] = useState<TemplateId | "">(initTemplate ?? "");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ sent?: number; failed?: number; skipped?: number; error?: string } | null>(null);
@@ -67,9 +72,16 @@ function MessagesPageInner() {
     const { data: { session } } = await db.auth.getSession();
     if (!session) { setResult({ error: "로그인 필요" }); setSending(false); return; }
 
-    const [segmentType, grade] = segment.startsWith("grade_")
-      ? ["grade", segment.replace("grade_", "")]
-      : [segment, undefined];
+    let segmentType: string = segment;
+    let grade: string | undefined;
+    let tag: string | undefined;
+    if (segment.startsWith("grade_")) {
+      segmentType = "grade";
+      grade = segment.replace("grade_", "");
+    } else if (segment.startsWith("tag:")) {
+      segmentType = "tag";
+      tag = segment.slice(4);
+    }
 
     const resp = await fetch("/api/messages/send", {
       method: "POST",
@@ -82,6 +94,7 @@ function MessagesPageInner() {
         segment: segmentType,
         template_id: templateId,
         template_vars: grade ? { grade } : {},
+        ...(tag ? { tag } : {}),
       }),
     });
 
@@ -101,14 +114,20 @@ function MessagesPageInner() {
           <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[#5f5e5a]">고객 세그먼트</label>
-              <select
-                value={segment}
-                onChange={(e) => setSegment(e.target.value as Segment)}
-                className={selectCls}
-              >
-                <option value="">-- 선택 --</option>
-                {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
+              {isTagPrefill ? (
+                <div style={{ background: '#f8f7f4', border: '1px solid #e5e5e0', borderRadius: 8, padding: '12px 14px', fontSize: 14, color: '#2c2c2a' }}>
+                  태그: {initSegment.tag}
+                </div>
+              ) : (
+                <select
+                  value={segment}
+                  onChange={(e) => setSegment(e.target.value as Segment)}
+                  className={selectCls}
+                >
+                  <option value="">-- 선택 --</option>
+                  {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
