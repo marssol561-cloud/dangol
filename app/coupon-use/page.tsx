@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AppHeader from "@/app/components/AppHeader";
 import Input from "@/app/components/ui/Input";
 import PrimaryButton from "@/app/components/ui/PrimaryButton";
@@ -14,10 +14,92 @@ const REASON_MSG: Record<string, string> = {
   expired: "만료된 쿠폰입니다.",
 };
 
+interface PendingItem {
+  participationId: string;
+  customerLabel: string;
+  eventTitle: string;
+  condition: string | null;
+  createdAt: string;
+}
+
+const PENDING_POLL_MS = 10000;
+
 export default function CouponUsePage() {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Result>(null);
+
+  const [pending, setPending] = useState<PendingItem[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(true);
+  const [actingId, setActingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const loadPending = useCallback(async () => {
+    try {
+      const res = await fetch("/api/events/pending");
+      if (res.ok) {
+        const data = await res.json();
+        setPending(data.pending ?? []);
+      }
+    } catch {
+      // 폴링이므로 다음 주기에 재시도 — 조용히 무시
+    } finally {
+      setPendingLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPending();
+    const interval = setInterval(loadPending, PENDING_POLL_MS);
+    return () => clearInterval(interval);
+  }, [loadPending]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  async function handleApprove(participationId: string) {
+    setActingId(participationId);
+    try {
+      const res = await fetch("/api/events/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participationId }),
+      });
+      if (res.ok) {
+        setPending((prev) => prev.filter((p) => p.participationId !== participationId));
+        setToast("쿠폰 발급·발송됨");
+      } else {
+        setToast("승인 처리에 실패했습니다.");
+      }
+    } catch {
+      setToast("네트워크 오류가 발생했습니다.");
+    } finally {
+      setActingId(null);
+    }
+  }
+
+  async function handleCancel(participationId: string) {
+    setActingId(participationId);
+    try {
+      const res = await fetch("/api/events/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participationId }),
+      });
+      if (res.ok) {
+        setPending((prev) => prev.filter((p) => p.participationId !== participationId));
+      } else {
+        setToast("취소 처리에 실패했습니다.");
+      }
+    } catch {
+      setToast("네트워크 오류가 발생했습니다.");
+    } finally {
+      setActingId(null);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,6 +131,56 @@ export default function CouponUsePage() {
         <div className="flex items-center gap-3 mb-6">
           <Link href="/" className="text-[#888780] text-sm">← 홈</Link>
           <h1 className="text-2xl font-semibold text-[#2c2c2a]">쿠폰 사용 처리</h1>
+        </div>
+
+        {toast && (
+          <div
+            style={{ maxWidth: 560, marginBottom: 16, background: '#0f6e56', color: '#fff', borderRadius: 8, padding: '10px 16px', fontSize: 14 }}
+          >
+            {toast}
+          </div>
+        )}
+
+        <div style={{ maxWidth: 560, marginBottom: 24 }}>
+          <div style={{ background: '#fff', border: '1px solid #e5e5e0', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <h2 className="text-lg font-semibold text-[#2c2c2a]">이벤트 승인 대기</h2>
+            {pendingLoading ? (
+              <p className="text-sm text-[#888780]">불러오는 중...</p>
+            ) : pending.length === 0 ? (
+              <p className="text-sm text-[#888780]">대기 중인 참여가 없습니다.</p>
+            ) : (
+              pending.map((p) => (
+                <div
+                  key={p.participationId}
+                  style={{ border: '1px solid #e5e5e0', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 6 }}
+                >
+                  <p className="text-sm text-[#2c2c2a]"><strong>고객</strong> {p.customerLabel}</p>
+                  <p className="text-sm text-[#2c2c2a]"><strong>이벤트</strong> {p.eventTitle}</p>
+                  <p className="text-sm text-[#5f5e5a]"><strong>확인 조건</strong> {p.condition ?? "-"}</p>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      disabled={actingId === p.participationId}
+                      onClick={() => handleApprove(p.participationId)}
+                      style={{ background: '#0f6e56', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                      className="disabled:opacity-60"
+                    >
+                      승인
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actingId === p.participationId}
+                      onClick={() => handleCancel(p.participationId)}
+                      style={{ background: '#fff', border: '1px solid #d32f2f', color: '#d32f2f', borderRadius: 8, padding: '8px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                      className="disabled:opacity-60"
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         <div style={{ maxWidth: 560 }}>
