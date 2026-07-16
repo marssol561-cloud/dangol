@@ -938,3 +938,72 @@ export async function cancelParticipation(
   if (updateErr) throw updateErr;
   return { status: "cancelled" };
 }
+
+// ============================================================
+// SP-E6: admin unified-customer event-tag rollup + filter (C3).
+// Cross-store read-only — joins customer_tags -> customers.unified_id.
+// No schema change; reuses the customer_tags rows A5 approval already writes.
+// ============================================================
+
+/** DISTINCT customer_tags.tag per unified customer, rolled up across every linked store customer. */
+export async function getUnifiedTagMap(
+  db: SupabaseClient,
+  unifiedIds: string[]
+): Promise<Record<string, string[]>> {
+  const map: Record<string, string[]> = {};
+  for (const id of unifiedIds) map[id] = [];
+  if (unifiedIds.length === 0) return map;
+
+  const { data: customerRows } = await db
+    .from("customers")
+    .select("id, unified_id")
+    .in("unified_id", unifiedIds);
+
+  const rows = (customerRows ?? []) as { id: string; unified_id: string }[];
+  if (rows.length === 0) return map;
+
+  const customerToUnified = new Map(rows.map((r) => [r.id, r.unified_id]));
+
+  const { data: tagRows } = await db
+    .from("customer_tags")
+    .select("customer_id, tag")
+    .in("customer_id", rows.map((r) => r.id));
+
+  const seen = new Map<string, Set<string>>();
+  for (const t of (tagRows ?? []) as { customer_id: string; tag: string }[]) {
+    const unifiedId = customerToUnified.get(t.customer_id);
+    if (!unifiedId) continue;
+    if (!seen.has(unifiedId)) seen.set(unifiedId, new Set());
+    seen.get(unifiedId)!.add(t.tag);
+  }
+
+  for (const [unifiedId, tags] of seen) map[unifiedId] = [...tags];
+  return map;
+}
+
+/** unified_customers.id list where at least one linked store customer holds a customer_tags row matching `tag`. */
+export async function getUnifiedIdsByTag(db: SupabaseClient, tag: string): Promise<string[]> {
+  const { data: tagRows } = await db.from("customer_tags").select("customer_id").eq("tag", tag);
+  const customerIds = [...new Set((tagRows ?? []).map((r) => (r as { customer_id: string }).customer_id))];
+  if (customerIds.length === 0) return [];
+
+  const { data: customerRows } = await db
+    .from("customers")
+    .select("unified_id")
+    .in("id", customerIds)
+    .not("unified_id", "is", null);
+
+  const unifiedIds = new Set(
+    (customerRows ?? [])
+      .map((r) => (r as { unified_id: string | null }).unified_id)
+      .filter((id): id is string => !!id)
+  );
+  return [...unifiedIds];
+}
+
+/** All distinct customer_tags.tag values present — for the admin filter chip list. */
+export async function listDistinctTags(db: SupabaseClient): Promise<string[]> {
+  const { data } = await db.from("customer_tags").select("tag");
+  const tags = new Set((data ?? []).map((r) => (r as { tag: string }).tag));
+  return [...tags].sort();
+}

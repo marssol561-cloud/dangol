@@ -9,28 +9,33 @@ interface UnifiedCustomer {
   store_count: number;
   channels: Record<string, unknown> | null;
   first_seen_at: string;
+  tags: string[];
 }
 
 interface ApiResponse {
   customers: UnifiedCustomer[];
   total: number;
+  availableTags: string[];
 }
 
 export default function AdminCustomersPage() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/customers")
+    const qs = selectedTag ? `?tag=${encodeURIComponent(selectedTag)}` : "";
+    fetch(`/api/admin/customers${qs}`)
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [selectedTag]);
 
   const handleExport = async () => {
     setExporting(true);
-    const res = await fetch("/api/admin/customers/export");
+    const qs = selectedTag ? `?tag=${encodeURIComponent(selectedTag)}` : "";
+    const res = await fetch(`/api/admin/customers/export${qs}`);
     if (res.ok) {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -44,6 +49,7 @@ export default function AdminCustomersPage() {
   };
 
   const customers = data?.customers ?? [];
+  const availableTags = data?.availableTags ?? [];
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
@@ -67,6 +73,37 @@ export default function AdminCustomersPage() {
             점포 간 동일인을 통합고객 1명으로 묶어 별도 관리 (동의 기반) · {data?.total ?? 0}명
           </p>
 
+          {/* Tag filter chips */}
+          {availableTags.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                onClick={() => setSelectedTag(null)}
+                style={{
+                  fontSize: 13, fontWeight: 600, borderRadius: 20, padding: '6px 14px', cursor: 'pointer',
+                  border: selectedTag === null ? '1px solid #0f6e56' : '1px solid #e5e5e0',
+                  background: selectedTag === null ? '#0f6e56' : '#fff',
+                  color: selectedTag === null ? '#fff' : '#5f5e5a',
+                }}
+              >
+                전체
+              </button>
+              {availableTags.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTag(t)}
+                  style={{
+                    fontSize: 13, fontWeight: 600, borderRadius: 20, padding: '6px 14px', cursor: 'pointer',
+                    border: selectedTag === t ? '1px solid #0f6e56' : '1px solid #e5e5e0',
+                    background: selectedTag === t ? '#0f6e56' : '#fff',
+                    color: selectedTag === t ? '#fff' : '#5f5e5a',
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Customer table */}
           {loading ? (
             <p style={{ textAlign: 'center', fontSize: 14, color: '#888780', paddingTop: 48 }}>불러오는 중...</p>
@@ -86,6 +123,18 @@ export default function AdminCustomersPage() {
                   <div style={{ flex: 2 }}>
                     <p style={{ fontSize: 14, color: '#2c2c2a', fontFamily: 'monospace' }}>{c.identifier_hash.slice(0, 12)}…</p>
                     <p style={{ fontSize: 12, color: '#888780' }}>최초 {new Date(c.first_seen_at).toLocaleDateString("ko-KR")}</p>
+                    {c.tags.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                        {c.tags.map((t) => (
+                          <span
+                            key={t}
+                            style={{ fontSize: 11, fontWeight: 600, color: '#0f6e56', background: '#e6f2ef', borderRadius: 10, padding: '2px 8px' }}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>{c.store_count}개 매장</span>
                   <span style={{ fontSize: 14, color: '#2c2c2a', width: 80 }}>일반</span>
