@@ -1,3 +1,4 @@
+import { SupabaseClient } from "@supabase/supabase-js";
 import { getServerClient } from "./dangolDb";
 
 // Base32 charset (ambiguous chars excluded — same as store_code)
@@ -97,4 +98,38 @@ export async function issueReferralCoupon(
 
   const benefit = (policy as { service_c?: string } | null)?.service_c ?? "친구 추천 쿠폰";
   return insertCoupon(customerId, storeLinkId, "C", benefit);
+}
+
+// ============================================================
+// SP-E4: staff-issued event coupon (event_id 연결) — kind='custom'.
+// db는 호출자(lib/events.ts)가 전달 — 기존 insertCoupon과 달리 테스트에서
+// adminClient를 직접 주입할 수 있도록 함(SP-E2/E3의 lib 함수 관례와 동일).
+// ============================================================
+export async function issueEventCoupon(
+  db: SupabaseClient,
+  input: { storeLinkId: string; customerId: string; eventId: string; benefit: string | null; validDays: number }
+): Promise<{ id: string; code: string; benefit: string | null; expires_at: string }> {
+  const expiresAt = new Date(Date.now() + input.validDays * 24 * 60 * 60 * 1000).toISOString();
+
+  for (let i = 0; i < 10; i++) {
+    const code = generateCouponCode();
+    const { data, error } = await db
+      .from("coupons")
+      .insert({
+        store_link_id: input.storeLinkId,
+        customer_id: input.customerId,
+        kind: "custom",
+        event_id: input.eventId,
+        code,
+        benefit: input.benefit,
+        status: "issued",
+        expires_at: expiresAt,
+      })
+      .select("id, code, benefit, expires_at")
+      .single();
+
+    if (!error && data) return data as { id: string; code: string; benefit: string | null; expires_at: string };
+    if (error && !error.message.includes("unique")) throw error;
+  }
+  throw new Error("이벤트 쿠폰 코드 생성 실패: 10회 재시도 초과");
 }

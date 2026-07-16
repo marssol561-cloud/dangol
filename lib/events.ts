@@ -1,9 +1,10 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { resolveSegment, type SegmentType } from "./segments";
 import { filterNonDeleted, isNightBlocked } from "./sendGuard";
-import { sendToSegment } from "./messaging";
+import { sendToSegment, sendCoupon } from "./messaging";
 import type { TemplateId } from "./templates";
 import { hashPII, encryptPII } from "./crypto";
+import { issueEventCoupon } from "./coupons";
 
 export type EventRow = {
   id: string;
@@ -639,4 +640,218 @@ export async function listUpcomingPreannounce(
 
   if (error || !data) return [];
   return data as { id: string; title: string; start_at: string | null }[];
+}
+
+// ============================================================
+// SP-E4: staff win-approval + coupon issuance. Approve records the
+// audit trail, splits event.condition into customer_tags, issues +
+// sends an event-linked coupon, and links it back to the
+// participation — all idempotent on a second approve call.
+// ============================================================
+
+export interface PendingApprovalItem {
+  participationId: string;
+  customerLabel: string;
+  eventTitle: string;
+  condition: string | null;
+  createdAt: string;
+}
+
+/** Start of "today" in KST (UTC+9), returned as a UTC ISO instant — server timezone-independent. */
+function startOfTodayKST(now: Date = new Date()): string {
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = kst.getUTCMonth();
+  const d = kst.getUTCDate();
+  return new Date(Date.UTC(y, m, d) - 9 * 60 * 60 * 1000).toISOString();
+}
+
+export async function listPendingApprovals(
+  db: SupabaseClient,
+  storeLinkId: string
+): Promise<PendingApprovalItem[]> {
+  const { data: rows, error } = await db
+    .from("event_participations")
+    .select("id, event_id, customer_id, condition_answer, created_at")
+    .eq("store_link_id", storeLinkId)
+    .eq("status", "pending")
+    .gte("created_at", startOfTodayKST())
+    .order("created_at", { ascending: true });
+
+  if (error || !rows || rows.length === 0) return [];
+
+  const participations = rows as {
+    id: string; event_id: string; customer_id: string; condition_answer: string | null; created_at: string;
+  }[];
+
+  const eventIds = [...new Set(participations.map((p) => p.event_id))];
+  const customerIds = [...new Set(participations.map((p) => p.customer_id))];
+
+  const { data: eventRows } = await db.from("events").select("id, title, condition").in("id", eventIds);
+  const { data: customerRows } = await db
+    .from("customers")
+    .select("id, name, phone_enc, email_enc, kakao_enc")
+    .in("id", customerIds);
+
+  type EventLite = { id: string; title: string; condition: string | null };
+  type CustomerLite = { id: string; name: string | null; phone_enc: string | null; email_enc: string | null; kakao_enc: string | null };
+
+  const eventMap = new Map((eventRows ?? []).map((e) => [(e as EventLite).id, e as EventLite]));
+  const customerMap = new Map((customerRows ?? []).map((c) => [(c as CustomerLite).id, c as CustomerLite]));
+
+  const { maskPhone, maskEmail, maskKakao } = await import("./maskPii");
+  const { decryptPII } = await import("./crypto");
+
+  return participations.map((p) => {
+    const event = eventMap.get(p.event_id);
+    const customer = customerMap.get(p.customer_id);
+
+    let contact = "";
+    try {
+      if (customer?.phone_enc) contact = maskPhone(decryptPII(customer.phone_enc));
+      else if (customer?.email_enc) contact = maskEmail(decryptPII(customer.email_enc));
+      else if (customer?.kakao_enc) contact = maskKakao(decryptPII(customer.kakao_enc));
+    } catch {
+      contact = "***";
+    }
+    const customerLabel = customer?.name ? `${customer.name} (${contact || "연락처없음"})` : contact || "고객";
+
+    return {
+      participationId: p.id,
+      customerLabel,
+      eventTitle: event?.title ?? "",
+      condition: event?.condition ?? null,
+      createdAt: p.created_at,
+    };
+  });
+}
+
+export type ApproveError = "not_pending" | "not_found";
+
+/**
+ * store_link 불일치는 cross-store 접근으로 취급해 not_found로 반환
+ * (getEventDetail/updateEvent의 기존 cross-store 규약과 동일).
+ * status==='approved'는 멱등 처리 — 기존 발급된 쿠폰을 그대로 반환하고
+ * 재발급하지 않는다. status가 pending도 approved도 아니면(cancelled/expired)
+ * not_pending 에러.
+ */
+export async function approveParticipation(
+  db: SupabaseClient,
+  participationId: string,
+  approverId: string,
+  staffStoreLinkId: string
+): Promise<{ status: "approved"; coupon: { code: string; benefit: string | null } } | { error: ApproveError }> {
+  const { data: partRow, error: partErr } = await db
+    .from("event_participations")
+    .select("id, event_id, customer_id, store_link_id, status, coupon_id")
+    .eq("id", participationId)
+    .maybeSingle();
+
+  if (partErr || !partRow) return { error: "not_found" };
+  const participation = partRow as {
+    id: string; event_id: string; customer_id: string; store_link_id: string;
+    status: ParticipationRow["status"]; coupon_id: string | null;
+  };
+
+  if (participation.store_link_id !== staffStoreLinkId) return { error: "not_found" };
+
+  if (participation.status === "approved") {
+    if (!participation.coupon_id) return { error: "not_pending" };
+    const { data: couponRow } = await db
+      .from("coupons")
+      .select("code, benefit")
+      .eq("id", participation.coupon_id)
+      .maybeSingle();
+    const c = couponRow as { code: string; benefit: string | null } | null;
+    return { status: "approved", coupon: { code: c?.code ?? "", benefit: c?.benefit ?? null } };
+  }
+
+  if (participation.status !== "pending") return { error: "not_pending" };
+
+  const { data: eventRow, error: eventErr } = await db
+    .from("events")
+    .select("id, title, condition, reward_benefit, coupon_valid_days")
+    .eq("id", participation.event_id)
+    .maybeSingle();
+  if (eventErr || !eventRow) return { error: "not_found" };
+  const event = eventRow as {
+    id: string; title: string; condition: string | null; reward_benefit: string | null; coupon_valid_days: number | null;
+  };
+
+  const now = new Date().toISOString();
+
+  // Guarded by .eq("status","pending") — a concurrent approve racing this one loses
+  // the update (0 rows) and falls back to a re-run, which now sees the winner's result.
+  const { data: updatedRows, error: updateErr } = await db
+    .from("event_participations")
+    .update({ status: "approved", approved_by: approverId, approved_at: now, tag: event.condition })
+    .eq("id", participationId)
+    .eq("status", "pending")
+    .select("id");
+
+  if (updateErr) throw updateErr;
+  if (!updatedRows || updatedRows.length === 0) {
+    return approveParticipation(db, participationId, approverId, staffStoreLinkId);
+  }
+
+  if (event.condition && event.condition.trim()) {
+    const tags = event.condition
+      .split(/[,·]/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (tags.length > 0) {
+      await db.from("customer_tags").insert(
+        tags.map((tag) => ({
+          customer_id: participation.customer_id,
+          store_link_id: staffStoreLinkId,
+          tag,
+          source_event_id: event.id,
+          created_by: approverId,
+        }))
+      );
+    }
+  }
+
+  const coupon = await issueEventCoupon(db, {
+    storeLinkId: staffStoreLinkId,
+    customerId: participation.customer_id,
+    eventId: event.id,
+    benefit: event.reward_benefit ?? null,
+    validDays: event.coupon_valid_days ?? 14,
+  });
+
+  await db.from("event_participations").update({ coupon_id: coupon.id }).eq("id", participationId);
+
+  await sendCoupon(coupon.id);
+
+  return { status: "approved", coupon: { code: coupon.code, benefit: coupon.benefit } };
+}
+
+export type CancelError = "not_pending" | "not_found";
+
+export async function cancelParticipation(
+  db: SupabaseClient,
+  participationId: string,
+  staffStoreLinkId: string
+): Promise<{ status: "cancelled" } | { error: CancelError }> {
+  const { data: partRow, error: partErr } = await db
+    .from("event_participations")
+    .select("id, store_link_id, status")
+    .eq("id", participationId)
+    .maybeSingle();
+
+  if (partErr || !partRow) return { error: "not_found" };
+  const participation = partRow as { id: string; store_link_id: string; status: ParticipationRow["status"] };
+
+  if (participation.store_link_id !== staffStoreLinkId) return { error: "not_found" };
+  if (participation.status !== "pending") return { error: "not_pending" };
+
+  const { error: updateErr } = await db
+    .from("event_participations")
+    .update({ status: "cancelled" })
+    .eq("id", participationId)
+    .eq("status", "pending");
+
+  if (updateErr) throw updateErr;
+  return { status: "cancelled" };
 }
