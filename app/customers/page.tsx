@@ -36,7 +36,28 @@ interface CustomerDetail {
   visits: { id: string; visited_at: string; stamp_delta: number; source: string }[];
   messages: { id: string; channel: string; template_id: string | null; status: string; created_at: string }[];
   consents: { type: string; agreed: boolean; agreed_at: string }[];
+  eventParticipations: {
+    eventTitle: string;
+    participatedAt: string;
+    rewardBenefit: string | null;
+    status: "pending" | "approved" | "expired" | "cancelled";
+    exchange: string | null;
+  }[];
+  tags: { tag: string; source_event_id: string | null; created_at: string }[];
 }
+
+const PARTICIPATION_STATUS_LABEL: Record<string, string> = {
+  pending: "대기중",
+  approved: "승인됨",
+  expired: "만료",
+  cancelled: "취소됨",
+};
+
+const EXCHANGE_STATUS_LABEL: Record<string, string> = {
+  issued: "발급됨",
+  used: "교환완료",
+  expired: "만료",
+};
 
 const GRADE_STYLE: Record<string, { background: string; color: string }> = {
   vip: { background: '#faeeda', color: '#633806' },
@@ -263,6 +284,50 @@ export default function CustomersPage() {
                           <span key={con.type} style={{ background: '#e1f5ee', color: '#085041', padding: '2px 8px', borderRadius: 999, fontSize: 12 }}>
                             {con.type}
                           </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {detail.eventParticipations.length > 0 && (
+                    <div>
+                      <p className="text-xs text-[#888780] mb-1.5">이벤트 참여 이력</p>
+                      <div style={{ background: '#f8f7f4', borderRadius: 8, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', padding: '6px 10px', gap: 8 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#888780', flex: 2 }}>이벤트</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#888780', flex: 1 }}>일시</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#888780', flex: 2 }}>보상</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#888780', flex: 1 }}>교환상태</span>
+                        </div>
+                        <ul className="flex flex-col max-h-36 overflow-y-auto">
+                          {detail.eventParticipations.map((p, i) => (
+                            <li key={i} style={{ display: 'flex', padding: '6px 10px', gap: 8, borderTop: '1px solid #e5e5e0' }}>
+                              <span style={{ fontSize: 12, color: '#2c2c2a', flex: 2 }}>{p.eventTitle}</span>
+                              <span style={{ fontSize: 12, color: '#5f5e5a', flex: 1 }}>{new Date(p.participatedAt).toLocaleDateString("ko-KR")}</span>
+                              <span style={{ fontSize: 12, color: '#5f5e5a', flex: 2 }}>{p.rewardBenefit ?? "-"}</span>
+                              <span style={{ fontSize: 12, color: '#5f5e5a', flex: 1 }}>
+                                {p.exchange ? EXCHANGE_STATUS_LABEL[p.exchange] ?? p.exchange : PARTICIPATION_STATUS_LABEL[p.status] ?? p.status}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {detail.tags.length > 0 && (
+                    <div>
+                      <p className="text-xs text-[#888780] mb-1.5">확보 태그</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {detail.tags.map((t, i) => (
+                          <Link
+                            key={i}
+                            href={`/messages?segment=tag:${encodeURIComponent(t.tag)}`}
+                            title="이 태그로 소식 보내기"
+                            style={{ background: '#faeeda', color: '#633806', padding: '3px 10px', borderRadius: 999, fontSize: 12, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                          >
+                            {t.tag} <span style={{ fontSize: 10 }}>→</span>
+                          </Link>
                         ))}
                       </div>
                     </div>

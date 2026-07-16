@@ -46,7 +46,8 @@ export async function sendToSegment(
   storeLinkId: string,
   segment: SegmentType,
   templateId: TemplateId,
-  templateVars: Record<string, string> = {}
+  templateVars: Record<string, string> = {},
+  tag?: string
 ): Promise<{ sent: number; failed: number; skipped: number }> {
   const db = getServerClient();
   const template = getTemplate(templateId);
@@ -57,7 +58,7 @@ export async function sendToSegment(
 
   const apiKey = decryptPII(channelRow.api_key_enc);
 
-  const rawCustomers = await resolveSegment({ storeLinkId, type: segment });
+  const rawCustomers = await resolveSegment({ storeLinkId, type: segment, tag });
   // Exclude anonymized (deleted_at IS NOT NULL) customers — double-guard in addition to segment filter
   const customers = await filterNonDeleted(rawCustomers);
   if (customers.length === 0) return { sent: 0, failed: 0, skipped: 0 };

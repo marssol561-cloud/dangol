@@ -4,6 +4,7 @@ import { getServerClient } from "@/lib/dangolDb";
 import { decryptPII } from "@/lib/crypto";
 import { maskPhone, maskEmail, maskKakao } from "@/lib/maskPii";
 import { computeGradeDisplay, GRADE_LABEL } from "@/lib/grade";
+import { getCustomerEventHistory } from "@/lib/events";
 
 export async function GET(
   _req: NextRequest,
@@ -81,6 +82,15 @@ export async function GET(
     .eq("customer_id", id)
     .eq("agreed", true);
 
+  // Event participation history + captured tags (SP-E5)
+  const eventParticipations = await getCustomerEventHistory(db, id, ctx.storeLinkId);
+  const { data: tagRows } = await db
+    .from("customer_tags")
+    .select("tag, source_event_id, created_at")
+    .eq("customer_id", id)
+    .eq("store_link_id", ctx.storeLinkId)
+    .order("created_at", { ascending: false });
+
   return NextResponse.json({
     customer: {
       id: c.id,
@@ -100,6 +110,8 @@ export async function GET(
     visits: visits ?? [],
     messages: messages ?? [],
     consents: consents ?? [],
+    eventParticipations,
+    tags: tagRows ?? [],
   });
 }
 

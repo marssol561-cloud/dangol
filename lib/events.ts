@@ -827,6 +827,89 @@ export async function approveParticipation(
   return { status: "approved", coupon: { code: coupon.code, benefit: coupon.benefit } };
 }
 
+// ============================================================
+// SP-E5: owner dashboard event badge + customer detail event
+// history/tags — read-only, reuses listStoreEvents/deriveStatus
+// and the startOfTodayKST helper above as-is.
+// ============================================================
+
+export interface EventBadges {
+  activeEventCount: number;
+  todayParticipationCount: number;
+}
+
+export async function getEventBadges(db: SupabaseClient, storeLinkId: string): Promise<EventBadges> {
+  const events = await listStoreEvents(db, storeLinkId);
+  const activeEventCount = events.filter((e) => e.derivedStatus === "active").length;
+
+  const { count } = await db
+    .from("event_participations")
+    .select("id", { count: "exact", head: true })
+    .eq("store_link_id", storeLinkId)
+    .gte("created_at", startOfTodayKST());
+
+  return { activeEventCount, todayParticipationCount: count ?? 0 };
+}
+
+export interface CustomerEventHistoryItem {
+  eventTitle: string;
+  participatedAt: string;
+  rewardBenefit: string | null;
+  status: ParticipationRow["status"];
+  exchange: string | null;
+}
+
+/** Verifies the customer belongs to storeLinkId first — cross-store lookup returns []. */
+export async function getCustomerEventHistory(
+  db: SupabaseClient,
+  customerId: string,
+  storeLinkId: string
+): Promise<CustomerEventHistoryItem[]> {
+  const { data: customerRow } = await db
+    .from("customers")
+    .select("id")
+    .eq("id", customerId)
+    .eq("store_link_id", storeLinkId)
+    .maybeSingle();
+  if (!customerRow) return [];
+
+  const { data: rows, error } = await db
+    .from("event_participations")
+    .select("event_id, created_at, status, coupon_id")
+    .eq("customer_id", customerId)
+    .eq("store_link_id", storeLinkId)
+    .order("created_at", { ascending: false });
+
+  if (error || !rows || rows.length === 0) return [];
+
+  const participations = rows as {
+    event_id: string; created_at: string; status: ParticipationRow["status"]; coupon_id: string | null;
+  }[];
+
+  const eventIds = [...new Set(participations.map((p) => p.event_id))];
+  const { data: eventRows } = await db.from("events").select("id, title, reward_benefit").in("id", eventIds);
+  type EventLite = { id: string; title: string; reward_benefit: string | null };
+  const eventMap = new Map((eventRows ?? []).map((e) => [(e as EventLite).id, e as EventLite]));
+
+  const couponIds = participations.map((p) => p.coupon_id).filter((id): id is string => !!id);
+  const couponStatusMap = new Map<string, string>();
+  if (couponIds.length > 0) {
+    const { data: couponRows } = await db.from("coupons").select("id, status").in("id", couponIds);
+    for (const c of (couponRows ?? []) as { id: string; status: string }[]) couponStatusMap.set(c.id, c.status);
+  }
+
+  return participations.map((p) => {
+    const event = eventMap.get(p.event_id);
+    return {
+      eventTitle: event?.title ?? "",
+      participatedAt: p.created_at,
+      rewardBenefit: event?.reward_benefit ?? null,
+      status: p.status,
+      exchange: p.coupon_id ? couponStatusMap.get(p.coupon_id) ?? null : null,
+    };
+  });
+}
+
 export type CancelError = "not_pending" | "not_found";
 
 export async function cancelParticipation(
