@@ -122,7 +122,7 @@ export async function sendToSegment(
       sent_at: sendOk ? new Date().toISOString() : null,
     });
 
-    sendOk ? sent++ : failed++;
+    if (sendOk) sent++; else failed++;
   }
 
   return { sent, failed, skipped };

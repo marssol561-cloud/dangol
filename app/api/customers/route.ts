@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { webcrypto } from "node:crypto";
 import { getServerClient } from "@/lib/dangolDb";
 import { hashPII, encryptPII } from "@/lib/crypto";
 import { issueFirstCoupon, issueReferralCoupon } from "@/lib/coupons";
@@ -187,6 +188,6 @@ export async function POST(req: NextRequest) {
 
 function generateBrowserToken(): string {
   const bytes = new Uint8Array(16);
-  (globalThis.crypto ?? require("crypto").webcrypto).getRandomValues(bytes);
+  (globalThis.crypto ?? webcrypto).getRandomValues(bytes);
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }

@@ -12,7 +12,7 @@ async function resolveOwnerStoreLinkId(userId: string): Promise<string | null> {
   return (data as { store_link_id: string | null } | null)?.store_link_id ?? null;
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
 

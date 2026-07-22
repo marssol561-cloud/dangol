@@ -31,6 +31,7 @@ export default function StaffSection() {
     setLoading(false);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount; state set after await, not a sync render hazard
   useEffect(() => { fetchStaff(); }, [fetchStaff]);
 
   const createStaff = async () => {

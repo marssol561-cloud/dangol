@@ -66,7 +66,7 @@ describe("RLS SP4 — anon denied on all SP4 tables", () => {
     const { userId } = await setupOwnerAndLink();
     ownerUserId = userId;
     const anon = anonClient();
-    const { data, error } = await anon.from("visits").select("id").limit(1);
+    const { data } = await anon.from("visits").select("id").limit(1);
     // Either data is empty or error; data should not contain rows
     expect(!data || data.length === 0).toBe(true);
   });

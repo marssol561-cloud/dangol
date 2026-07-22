@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { webcrypto } from "node:crypto";
 import { getServerClient } from "./dangolDb";
 
 // Base32 charset (ambiguous chars excluded — same as store_code)
@@ -13,7 +14,7 @@ export function generateCouponCode(): string {
 
 function randomBytes(n: number): Uint8Array {
   const buf = new Uint8Array(n);
-  (globalThis.crypto ?? require("crypto").webcrypto).getRandomValues(buf);
+  (globalThis.crypto ?? webcrypto).getRandomValues(buf);
   return buf;
 }
 

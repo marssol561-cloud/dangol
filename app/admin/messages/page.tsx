@@ -1,7 +1,6 @@
 import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
-import Link from "next/link";
 import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminMessagesPage() {
@@ -24,7 +23,6 @@ export default async function AdminMessagesPage() {
     else aggMap[m.channel].pending++;
   }
 
-  const channelRows = Object.entries(aggMap);
   const sendCh = (channels ?? []) as {
     store_link_id: string;
     provider: string;

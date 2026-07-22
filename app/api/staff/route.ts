@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ staff_id: newUserId, email }, { status: 201 });
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const ctx = await getOwnerContext();
   if (!ctx || ctx.role !== "owner") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

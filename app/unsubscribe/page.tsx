@@ -37,6 +37,7 @@ function UnsubscribeContent() {
 
   useEffect(() => {
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional init branch: no token → error state
       setState("error");
       return;
     }
