@@ -48,7 +48,6 @@ export default async function AdminDashboardPage() {
     { href: "/admin/customers", label: "통합 고객" },
     { href: "/admin/messages", label: "발송·비용" },
     { href: "/admin/consents", label: "동의·법무" },
-    { href: "/admin/system", label: "시스템" },
     { href: "/admin/channels", label: "채널 연결" },
   ];
 
