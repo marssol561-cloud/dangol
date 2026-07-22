@@ -24,6 +24,7 @@ export default async function AdminDashboardPage() {
     db.from("messages").select("id", { count: "exact", head: true }).eq("status", "sent"),
     db.from("messages")
       .select("id", { count: "exact", head: true })
+      // eslint-disable-next-line react-hooks/purity -- server component; 24h window from request time is intentionally time-dependent
       .gte("created_at", new Date(Date.now() - 86400000).toISOString()),
   ]);
 

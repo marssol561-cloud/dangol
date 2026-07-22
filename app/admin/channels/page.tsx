@@ -45,11 +45,6 @@ export default async function AdminChannelsPage() {
     }
   }
 
-  const supportTargets = storeList.filter((s) => {
-    const ch = channelMap[s.id];
-    return !ch || ch.setup_step < 4;
-  });
-
   return (
     <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
       <AppHeader variant="admin" activeItem="채널 연결" />

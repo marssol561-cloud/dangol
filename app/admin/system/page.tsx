@@ -1,7 +1,6 @@
 import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
-import Link from "next/link";
 import AppHeader from "@/app/components/AppHeader";
 
 export default async function AdminSystemPage() {
@@ -36,13 +35,6 @@ export default async function AdminSystemPage() {
     count: number | null;
     created_at: string;
   }[];
-
-  const tools = [
-    { name: "Supabase Dashboard", href: "https://supabase.com/dashboard", desc: "DB 관리" },
-    { name: "Vercel Dashboard", href: "https://vercel.com/dashboard", desc: "배포 관리" },
-    { name: "Sentry", href: "https://sentry.io", desc: "에러 모니터링" },
-    { name: "SOLAPI", href: "https://app.solapi.com", desc: "문자 발송" },
-  ];
 
   const statusCards = [
     { name: "Sentry 모니터링", desc: `스키마 v${schemaVersion} · 관리자 ${adminCount ?? 0}명`, href: "https://sentry.io" },

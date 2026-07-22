@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { createClient } from "@supabase/supabase-js";
-import { hashPII, encryptPII } from "@/lib/crypto";
 import { expectedSchemaVersion } from "./setup";
 
 const DANGOL_DB_URL = process.env.DANGOL_DB_URL!;

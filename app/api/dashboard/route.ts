@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getOwnerContext } from "@/lib/ownerAuth";
 import { monthlyStats, consentRate, messageEffect, todayCards } from "@/lib/dashboard";
 import { getEventBadges } from "@/lib/events";
 import { getServerClient } from "@/lib/dangolDb";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const ctx = await getOwnerContext();
   if (!ctx || ctx.role !== "owner") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

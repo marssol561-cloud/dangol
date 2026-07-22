@@ -105,6 +105,7 @@ export default function CustomersPage() {
     setLoading(false);
   }, [grade, channel, lastVisitDays]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount; state set after await, not a sync render hazard
   useEffect(() => { fetchList(); }, [fetchList]);
 
   const openDetail = async (id: string) => {

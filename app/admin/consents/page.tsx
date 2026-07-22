@@ -1,16 +1,7 @@
 import { getSessionUser } from "@/lib/auth.server";
 import { requireAdmin } from "@/lib/admin";
 import { getServerClient } from "@/lib/dangolDb";
-import Link from "next/link";
 import AppHeader from "@/app/components/AppHeader";
-
-const CONSENT_LABELS: Record<string, string> = {
-  required: "필수 동의",
-  thirdparty: "3자 제공",
-  ad_sms: "SMS 광고",
-  ad_kakao: "카카오 광고",
-  ad_email: "이메일 광고",
-};
 
 export default async function AdminConsentsPage() {
   const user = await getSessionUser();

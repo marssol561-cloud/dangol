@@ -49,6 +49,7 @@ export default function CouponUsePage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- polling loader on mount
     loadPending();
     const interval = setInterval(loadPending, PENDING_POLL_MS);
     return () => clearInterval(interval);
