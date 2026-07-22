@@ -1,4 +1,4 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { DangolClient } from "./dangolDb";
 import { webcrypto } from "node:crypto";
 import { getServerClient } from "./dangolDb";
 
@@ -107,7 +107,7 @@ export async function issueReferralCoupon(
 // adminClient를 직접 주입할 수 있도록 함(SP-E2/E3의 lib 함수 관례와 동일).
 // ============================================================
 export async function issueEventCoupon(
-  db: SupabaseClient,
+  db: DangolClient,
   input: { storeLinkId: string; customerId: string; eventId: string; benefit: string | null; validDays: number }
 ): Promise<{ id: string; code: string; benefit: string | null; expires_at: string }> {
   const expiresAt = new Date(Date.now() + input.validDays * 24 * 60 * 60 * 1000).toISOString();

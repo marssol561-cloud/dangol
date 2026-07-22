@@ -5,7 +5,7 @@ function adminClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -13,7 +13,7 @@ function anonClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_ANON_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -127,7 +127,7 @@ describe("RLS SP4 — anon denied on all SP4 tables", () => {
     const userClient = createClient(
       process.env.DANGOL_DB_URL!,
       process.env.DANGOL_DB_ANON_KEY!,
-      { auth: { persistSession: false } }
+      { db: { schema: 'dangol' }, auth: { persistSession: false } }
     );
     const { error: signInErr } = await userClient.auth.signInWithPassword({
       email: `rlssp4_${uid1.slice(0, 8)}@example.com`,

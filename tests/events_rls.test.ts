@@ -6,10 +6,10 @@ const DANGOL_DB_SERVICE_ROLE_KEY = process.env.DANGOL_DB_SERVICE_ROLE_KEY!;
 const DANGOL_DB_ANON_KEY = process.env.DANGOL_DB_ANON_KEY!;
 
 function adminClient() {
-  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 function anonClient() {
-  return createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+  return createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
 const TS = Date.now();

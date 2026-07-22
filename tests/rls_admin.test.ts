@@ -7,6 +7,7 @@ const DANGOL_DB_ANON_KEY = process.env.DANGOL_DB_ANON_KEY!;
 
 function adminClient() {
   return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, {
+    db: { schema: 'dangol' },
     auth: { persistSession: false },
   });
 }
@@ -67,14 +68,14 @@ afterAll(async () => {
 
 describe("RLS — admins table", () => {
   it("anon cannot SELECT from admins", async () => {
-    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     const { data, error } = await anon.from("admins").select("id").eq("id", adminUserId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;
     expect(denied).toBe(true);
   });
 
   it("owner (authenticated, not admin) cannot SELECT from admins", async () => {
-    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     await ownerDb.auth.signInWithPassword({ email: OWNER_EMAIL, password: OWNER_PASSWORD });
     const { data, error } = await ownerDb.from("admins").select("id").eq("id", adminUserId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;
@@ -85,14 +86,14 @@ describe("RLS — admins table", () => {
 
 describe("RLS — unified_customers table", () => {
   it("anon cannot SELECT from unified_customers", async () => {
-    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     const { data, error } = await anon.from("unified_customers").select("id").eq("id", uniId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;
     expect(denied).toBe(true);
   });
 
   it("owner (authenticated) cannot SELECT from unified_customers", async () => {
-    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     await ownerDb.auth.signInWithPassword({ email: OWNER_EMAIL, password: OWNER_PASSWORD });
     const { data, error } = await ownerDb.from("unified_customers").select("id").eq("id", uniId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;
@@ -103,14 +104,14 @@ describe("RLS — unified_customers table", () => {
 
 describe("RLS — audit_logs table", () => {
   it("anon cannot SELECT from audit_logs", async () => {
-    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     const { data, error } = await anon.from("audit_logs").select("id").eq("id", auditId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;
     expect(denied).toBe(true);
   });
 
   it("owner (authenticated) cannot SELECT from audit_logs", async () => {
-    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     await ownerDb.auth.signInWithPassword({ email: OWNER_EMAIL, password: OWNER_PASSWORD });
     const { data, error } = await ownerDb.from("audit_logs").select("id").eq("id", auditId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;

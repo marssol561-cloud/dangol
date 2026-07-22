@@ -7,7 +7,7 @@ const DANGOL_DB_SERVICE_ROLE_KEY = process.env.DANGOL_DB_SERVICE_ROLE_KEY!;
 const DANGOL_DB_ANON_KEY = process.env.DANGOL_DB_ANON_KEY!;
 
 function adminClient() {
-  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
 let storeLinkId: string;
@@ -72,7 +72,7 @@ beforeAll(async () => {
 
 describe("anon — customers table UPDATE denied", () => {
   it("anon cannot UPDATE customers memo", async () => {
-    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     const { data, error } = await anon
       .from("customers")
       .update({ memo: "hacked" })
@@ -84,7 +84,7 @@ describe("anon — customers table UPDATE denied", () => {
   });
 
   it("anon cannot SELECT customers", async () => {
-    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     const { data, error } = await anon.from("customers").select("id").eq("id", customerId);
     const denied = error !== null || !data || (data as unknown[]).length === 0;
     expect(denied).toBe(true);
@@ -93,7 +93,7 @@ describe("anon — customers table UPDATE denied", () => {
 
 describe("owner — UPDATE own customers", () => {
   it("owner can UPDATE memo on own store customer", async () => {
-    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     await ownerDb.auth.signInWithPassword({ email: OWNER_EMAIL, password: OWNER_PASSWORD });
 
     const { error } = await ownerDb
@@ -109,7 +109,7 @@ describe("owner — UPDATE own customers", () => {
   });
 
   it("owner cannot UPDATE customer in another store", async () => {
-    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { auth: { persistSession: false } });
+    const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     await ownerDb.auth.signInWithPassword({ email: OWNER_EMAIL, password: OWNER_PASSWORD });
 
     const { data, error } = await ownerDb

@@ -11,7 +11,7 @@ const DANGOL_DB_URL = process.env.DANGOL_DB_URL!;
 const DANGOL_DB_SERVICE_ROLE_KEY = process.env.DANGOL_DB_SERVICE_ROLE_KEY!;
 
 function adminClient() {
-  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
 const TS = Date.now();

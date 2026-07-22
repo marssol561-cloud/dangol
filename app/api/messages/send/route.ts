@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
 
   const db = createClient(
     process.env.DANGOL_DB_URL!,
-    process.env.DANGOL_DB_ANON_KEY!
+    process.env.DANGOL_DB_ANON_KEY!,
+    { db: { schema: 'dangol' } }
   );
   const { data: { user } } = await db.auth.getUser(authHeader.replace("Bearer ", ""));
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify owner
-  const sdb = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!);
+  const sdb = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { db: { schema: 'dangol' } });
   const { data: link } = await sdb
     .from("store_links")
     .select("id")

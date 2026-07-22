@@ -7,6 +7,7 @@ const DANGOL_DB_ANON_KEY = process.env.DANGOL_DB_ANON_KEY!;
 
 function adminClient() {
   return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, {
+    db: { schema: 'dangol' },
     auth: { persistSession: false },
   });
 }
@@ -74,6 +75,7 @@ describe("isAdmin — DB-level gate check", () => {
 describe("admins table — anon cannot read", () => {
   it("anon gets empty result on admins SELECT", async () => {
     const anon = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, {
+      db: { schema: 'dangol' },
       auth: { persistSession: false },
     });
     const { data, error } = await anon.from("admins").select("id").eq("id", adminUserId);
@@ -83,6 +85,7 @@ describe("admins table — anon cannot read", () => {
 
   it("authenticated owner gets empty result on admins SELECT", async () => {
     const ownerDb = createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, {
+      db: { schema: 'dangol' },
       auth: { persistSession: false },
     });
     await ownerDb.auth.signInWithPassword({ email: OWNER_EMAIL, password: PASSWORD });
