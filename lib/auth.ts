@@ -29,6 +29,7 @@ export async function signUpOwner(params: SignUpOwnerParams) {
     email: params.email,
     password: params.password,
     options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
       data: {
         name: params.name,
         terms_agreed_at: params.terms_agreed_at,
