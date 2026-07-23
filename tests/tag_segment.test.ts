@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import type { DangolClient } from "@/lib/dangolDb";
 import { NextRequest } from "next/server";
 import { resolveSegment } from "@/lib/segments";
 import { sendToSegment } from "@/lib/messaging";
@@ -9,13 +10,13 @@ import { POST } from "@/app/api/messages/send/route";
 process.env.SOLAPI_MOCK = "true";
 
 function adminClient() {
-  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 function anonClient() {
-  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_ANON_KEY!, { auth: { persistSession: false } });
+  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_ANON_KEY!, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
-async function tagCustomer(admin: SupabaseClient, storeLinkId: string, tag: string, extra: Record<string, unknown> = {}) {
+async function tagCustomer(admin: DangolClient, storeLinkId: string, tag: string, extra: Record<string, unknown> = {}) {
   const { data: c } = await admin
     .from("customers")
     .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID(), ...extra })

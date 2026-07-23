@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import type { DangolClient } from "@/lib/dangolDb";
 import { getUnifiedTagMap, getUnifiedIdsByTag, listDistinctTags } from "@/lib/events";
 import { isAdmin } from "@/lib/admin";
 
@@ -7,7 +8,7 @@ const DANGOL_DB_URL = process.env.DANGOL_DB_URL!;
 const DANGOL_DB_SERVICE_ROLE_KEY = process.env.DANGOL_DB_SERVICE_ROLE_KEY!;
 
 function adminClient() {
-  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
 const TS = Date.now();
@@ -23,7 +24,7 @@ let tagId: string;
 let nonAdminOwnerId: string;
 let adminUserId: string;
 
-async function makeCustomer(admin: SupabaseClient, storeLinkId: string, unifiedId: string | null): Promise<string> {
+async function makeCustomer(admin: DangolClient, storeLinkId: string, unifiedId: string | null): Promise<string> {
   const { data } = await admin
     .from("customers")
     .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID(), unified_id: unifiedId })

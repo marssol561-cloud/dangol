@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
 
   const db = createClient(
     process.env.DANGOL_DB_URL!,
-    process.env.DANGOL_DB_SERVICE_ROLE_KEY!
+    process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
+    { db: { schema: 'dangol' } }
   );
 
   for (const ev of events) {

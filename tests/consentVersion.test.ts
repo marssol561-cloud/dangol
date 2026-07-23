@@ -7,12 +7,14 @@ const DANGOL_DB_ANON_KEY = process.env.DANGOL_DB_ANON_KEY!;
 
 function adminDb() {
   return createClient(DANGOL_DB_URL, DANGOL_DB_SERVICE_ROLE_KEY, {
+    db: { schema: 'dangol' },
     auth: { persistSession: false },
   });
 }
 
 function anonDb() {
   return createClient(DANGOL_DB_URL, DANGOL_DB_ANON_KEY, {
+    db: { schema: 'dangol' },
     auth: { persistSession: false },
   });
 }

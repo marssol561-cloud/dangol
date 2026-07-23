@@ -6,7 +6,7 @@ function adminClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -14,7 +14,7 @@ function anonClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_ANON_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -22,7 +22,7 @@ function authedClient(accessToken: string) {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_ANON_KEY!,
-    { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${accessToken}` } } }
   );
 }
 

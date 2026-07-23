@@ -1,4 +1,4 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { DangolClient } from "./dangolDb";
 import { resolveSegment, type SegmentType } from "./segments";
 import { filterNonDeleted, isNightBlocked } from "./sendGuard";
 import { sendToSegment, sendCoupon } from "./messaging";
@@ -40,7 +40,7 @@ function byPriority(a: EventRow, b: EventRow): number {
  * 순수 조회 함수 — 쓰기 없음. SP-E3 이후에서도 재사용.
  */
 export async function resolveStoreEvent(
-  db: SupabaseClient,
+  db: DangolClient,
   storeLinkId: string
 ): Promise<EventResolution> {
   const { data: events, error } = await db
@@ -150,7 +150,7 @@ export function deriveStatus(
   return "active";
 }
 
-async function countApproved(db: SupabaseClient, eventId: string): Promise<number> {
+async function countApproved(db: DangolClient, eventId: string): Promise<number> {
   const { count } = await db
     .from("event_participations")
     .select("id", { count: "exact", head: true })
@@ -160,7 +160,7 @@ async function countApproved(db: SupabaseClient, eventId: string): Promise<numbe
 }
 
 export async function listStoreEvents(
-  db: SupabaseClient,
+  db: DangolClient,
   storeLinkId: string
 ): Promise<EventListItem[]> {
   const { data, error } = await db
@@ -183,7 +183,7 @@ export async function listStoreEvents(
 }
 
 export async function getEventDetail(
-  db: SupabaseClient,
+  db: DangolClient,
   eventId: string,
   storeLinkId: string
 ): Promise<EventDetail | null> {
@@ -274,7 +274,7 @@ export function validateEventInput(
 }
 
 export async function createEvent(
-  db: SupabaseClient,
+  db: DangolClient,
   storeLinkId: string,
   createdBy: string,
   input: EventInput
@@ -318,7 +318,7 @@ const PATCHABLE_FIELDS: (keyof EventInput)[] = [
 ];
 
 export async function updateEvent(
-  db: SupabaseClient,
+  db: DangolClient,
   eventId: string,
   storeLinkId: string,
   input: EventInput
@@ -363,7 +363,7 @@ export const PREANNOUNCE_UNIT_PRICE_KRW = 20;
  * engine (sendToSegment) applies, so the preview count matches the real send.
  */
 export async function estimateAudience(
-  db: SupabaseClient,
+  db: DangolClient,
   storeLinkId: string,
   segment: SegmentType
 ): Promise<{ count: number }> {
@@ -375,7 +375,7 @@ export async function estimateAudience(
 export type AnnounceError = "not_found" | "not_preannounce" | "night_blocked";
 
 export async function previewAnnounce(
-  db: SupabaseClient,
+  db: DangolClient,
   eventId: string,
   storeLinkId: string,
   segment: SegmentType
@@ -390,7 +390,7 @@ export async function previewAnnounce(
 
 /** Reuses sendToSegment + isNightBlocked as-is — no reimplementation of the send engine. */
 export async function sendAnnounce(
-  db: SupabaseClient,
+  db: DangolClient,
   eventId: string,
   storeLinkId: string,
   segment: SegmentType,
@@ -438,7 +438,7 @@ export type ParticipationError = "no_active_event" | "consent_required" | "third
  * status instead of erroring or duplicating.
  */
 export async function createParticipation(
-  db: SupabaseClient,
+  db: DangolClient,
   input: CreateParticipationInput
 ): Promise<{ status: ParticipationRow["status"]; browserToken: string } | { error: ParticipationError }> {
   const { data: storeLink } = await db.from("store_links").select("id").eq("store_code", input.storeCode).maybeSingle();
@@ -572,7 +572,7 @@ export interface ParticipationStatusResult {
  * a customer is waiting to see their own approval.
  */
 export async function getParticipationStatus(
-  db: SupabaseClient,
+  db: DangolClient,
   storeCode: string,
   lookup: { browserToken: string } | { channel: Channel; identifier: string }
 ): Promise<ParticipationStatusResult | { error: "store_not_found" }> {
@@ -625,7 +625,7 @@ export async function getParticipationStatus(
 
 /** Preannounce events not yet started — for the B3 "다가오는 이벤트" banner. */
 export async function listUpcomingPreannounce(
-  db: SupabaseClient,
+  db: DangolClient,
   storeLinkId: string
 ): Promise<{ id: string; title: string; start_at: string | null }[]> {
   const nowIso = new Date().toISOString();
@@ -667,7 +667,7 @@ function startOfTodayKST(now: Date = new Date()): string {
 }
 
 export async function listPendingApprovals(
-  db: SupabaseClient,
+  db: DangolClient,
   storeLinkId: string
 ): Promise<PendingApprovalItem[]> {
   const { data: rows, error } = await db
@@ -736,7 +736,7 @@ export type ApproveError = "not_pending" | "not_found";
  * not_pending 에러.
  */
 export async function approveParticipation(
-  db: SupabaseClient,
+  db: DangolClient,
   participationId: string,
   approverId: string,
   staffStoreLinkId: string
@@ -838,7 +838,7 @@ export interface EventBadges {
   todayParticipationCount: number;
 }
 
-export async function getEventBadges(db: SupabaseClient, storeLinkId: string): Promise<EventBadges> {
+export async function getEventBadges(db: DangolClient, storeLinkId: string): Promise<EventBadges> {
   const events = await listStoreEvents(db, storeLinkId);
   const activeEventCount = events.filter((e) => e.derivedStatus === "active").length;
 
@@ -861,7 +861,7 @@ export interface CustomerEventHistoryItem {
 
 /** Verifies the customer belongs to storeLinkId first — cross-store lookup returns []. */
 export async function getCustomerEventHistory(
-  db: SupabaseClient,
+  db: DangolClient,
   customerId: string,
   storeLinkId: string
 ): Promise<CustomerEventHistoryItem[]> {
@@ -913,7 +913,7 @@ export async function getCustomerEventHistory(
 export type CancelError = "not_pending" | "not_found";
 
 export async function cancelParticipation(
-  db: SupabaseClient,
+  db: DangolClient,
   participationId: string,
   staffStoreLinkId: string
 ): Promise<{ status: "cancelled" } | { error: CancelError }> {
@@ -947,7 +947,7 @@ export async function cancelParticipation(
 
 /** DISTINCT customer_tags.tag per unified customer, rolled up across every linked store customer. */
 export async function getUnifiedTagMap(
-  db: SupabaseClient,
+  db: DangolClient,
   unifiedIds: string[]
 ): Promise<Record<string, string[]>> {
   const map: Record<string, string[]> = {};
@@ -982,7 +982,7 @@ export async function getUnifiedTagMap(
 }
 
 /** unified_customers.id list where at least one linked store customer holds a customer_tags row matching `tag`. */
-export async function getUnifiedIdsByTag(db: SupabaseClient, tag: string): Promise<string[]> {
+export async function getUnifiedIdsByTag(db: DangolClient, tag: string): Promise<string[]> {
   const { data: tagRows } = await db.from("customer_tags").select("customer_id").eq("tag", tag);
   const customerIds = [...new Set((tagRows ?? []).map((r) => (r as { customer_id: string }).customer_id))];
   if (customerIds.length === 0) return [];
@@ -1002,7 +1002,7 @@ export async function getUnifiedIdsByTag(db: SupabaseClient, tag: string): Promi
 }
 
 /** All distinct customer_tags.tag values present — for the admin filter chip list. */
-export async function listDistinctTags(db: SupabaseClient): Promise<string[]> {
+export async function listDistinctTags(db: DangolClient): Promise<string[]> {
   const { data } = await db.from("customer_tags").select("tag");
   const tags = new Set((data ?? []).map((r) => (r as { tag: string }).tag));
   return [...tags].sort();

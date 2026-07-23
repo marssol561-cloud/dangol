@@ -4,7 +4,7 @@ import { createParticipation, getParticipationStatus } from "@/lib/events";
 import { hashPII } from "@/lib/crypto";
 
 function adminClient() {
-  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
 const TS = Date.now();

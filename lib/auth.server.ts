@@ -10,6 +10,7 @@ export async function getServerSupabase() {
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_ANON_KEY!,
     {
+      db: { schema: 'dangol' },
       cookies: {
         getAll() {
           return cookieStore.getAll();

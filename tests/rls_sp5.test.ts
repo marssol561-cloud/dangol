@@ -5,7 +5,7 @@ function adminClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -13,7 +13,7 @@ function anonClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_ANON_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -110,7 +110,7 @@ describe("RLS SP5 — anon denied on all SP5 tables", () => {
     await admin.from("messages").insert({ store_link_id: storeLinkId2, channel: "email", content: "test2", status: "pending" });
 
     // Sign in as original owner
-    const db = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_ANON_KEY!, { auth: { persistSession: false } });
+    const db = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_ANON_KEY!, { db: { schema: 'dangol' }, auth: { persistSession: false } });
     const { data: sess } = await db.auth.signInWithPassword({ email: `rlssp5_${ctx.userId.slice(0, 4)}@example.com`, password: "Test1234!" }).catch(() => ({ data: null }));
 
     // Cleanup owner2

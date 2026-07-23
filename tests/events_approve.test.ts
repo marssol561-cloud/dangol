@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import type { DangolClient } from "@/lib/dangolDb";
 import { approveParticipation } from "@/lib/events";
 
 function adminClient() {
-  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+  return createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { db: { schema: 'dangol' }, auth: { persistSession: false } });
 }
 
 const TS = Date.now();
@@ -17,7 +18,7 @@ const createdCustomerIds: string[] = [];
 const createdParticipationIds: string[] = [];
 const createdCouponIds: string[] = [];
 
-async function makeCustomer(admin: SupabaseClient, storeLinkId: string): Promise<string> {
+async function makeCustomer(admin: DangolClient, storeLinkId: string): Promise<string> {
   const { data } = await admin
     .from("customers")
     .insert({ store_link_id: storeLinkId, grade: "normal", visit_count: 0, unsub_token: crypto.randomUUID() })
@@ -29,7 +30,7 @@ async function makeCustomer(admin: SupabaseClient, storeLinkId: string): Promise
 }
 
 async function makeParticipation(
-  admin: SupabaseClient,
+  admin: DangolClient,
   eventId_: string,
   storeLinkId: string,
   customerId: string,

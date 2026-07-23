@@ -7,7 +7,7 @@ import { encryptPII, decryptPII } from "@/lib/crypto";
 async function resolveOwner(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return null;
-  const db = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_ANON_KEY!);
+  const db = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_ANON_KEY!, { db: { schema: 'dangol' } });
   const { data: { user } } = await db.auth.getUser(authHeader.replace("Bearer ", ""));
   return user;
 }
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const storeLinkId = req.nextUrl.searchParams.get("store_link_id");
   if (!storeLinkId) return NextResponse.json({ error: "store_link_id required" }, { status: 400 });
 
-  const sdb = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!);
+  const sdb = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { db: { schema: 'dangol' } });
 
   const { data: link } = await sdb
     .from("store_links")
@@ -56,7 +56,7 @@ export async function PUT(req: NextRequest) {
   const { store_link_id } = body;
   if (!store_link_id) return NextResponse.json({ error: "store_link_id required" }, { status: 400 });
 
-  const sdb = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!);
+  const sdb = createClient(process.env.DANGOL_DB_URL!, process.env.DANGOL_DB_SERVICE_ROLE_KEY!, { db: { schema: 'dangol' } });
 
   const { data: link } = await sdb
     .from("store_links")

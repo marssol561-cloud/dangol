@@ -12,7 +12,7 @@ function adminClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 

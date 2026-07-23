@@ -28,7 +28,8 @@ export default function AutomationPage() {
 
   const db = createBrowserClient(
     process.env.NEXT_PUBLIC_DANGOL_DB_URL!,
-    process.env.NEXT_PUBLIC_DANGOL_DB_ANON_KEY!
+    process.env.NEXT_PUBLIC_DANGOL_DB_ANON_KEY!,
+    { db: { schema: 'dangol' } }
   );
 
   useEffect(() => {

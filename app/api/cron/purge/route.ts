@@ -30,7 +30,8 @@ async function handlePurge(req: NextRequest) {
   if (targets.length > 0) {
     const db = createClient(
       process.env.DANGOL_DB_URL!,
-      process.env.DANGOL_DB_SERVICE_ROLE_KEY!
+      process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
+      { db: { schema: 'dangol' } }
     );
     await db.from("audit_logs").insert({
       admin_user: null,

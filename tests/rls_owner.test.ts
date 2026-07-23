@@ -5,7 +5,7 @@ function adminClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -13,7 +13,7 @@ function anonClient() {
   return createClient(
     process.env.DANGOL_DB_URL!,
     process.env.DANGOL_DB_ANON_KEY!,
-    { auth: { persistSession: false } }
+    { db: { schema: 'dangol' }, auth: { persistSession: false } }
   );
 }
 
@@ -71,7 +71,7 @@ describe('test_rls_owner_isolation', () => {
     const clientA = createClient(
       process.env.DANGOL_DB_URL!,
       process.env.DANGOL_DB_ANON_KEY!,
-      { auth: { persistSession: false } }
+      { db: { schema: 'dangol' }, auth: { persistSession: false } }
     );
     await clientA.auth.signInWithPassword({
       email: ownerA.email,
