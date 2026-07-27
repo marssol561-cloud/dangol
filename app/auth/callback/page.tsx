@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getBrowserSupabase } from '@/lib/auth';
 import AppHeader from '@/app/components/AppHeader';
@@ -23,7 +23,7 @@ function resolveSafeNext(next: string | null): string {
   return next;
 }
 
-export default function AuthCallbackPage() {
+function AuthCallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [failed, setFailed] = useState(false);
@@ -89,5 +89,26 @@ export default function AuthCallbackPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function AuthCallbackFallback() {
+  return (
+    <div style={{ minHeight: '100vh', background: '#f8f7f4', display: 'flex', flexDirection: 'column' }}>
+      <AppHeader variant="auth" />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+        <Card>
+          <p style={{ fontSize: 16, color: '#2c2c2a' }}>이메일 인증을 처리하고 있습니다...</p>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<AuthCallbackFallback />}>
+      <AuthCallbackInner />
+    </Suspense>
   );
 }
