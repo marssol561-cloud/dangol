@@ -1,7 +1,7 @@
 # dangol 레포 에이전트 지침
 
 이 레포에서 작업하는 에이전트는 다음 전사 매뉴얼을 반드시 정독한다:
-- `C:\ITDALab\Management\Manuals\2026-05-29_잇다랩_제품조립매뉴얼_v1.md`
+- 제품 조립 매뉴얼 정본 — `C:\ITDALab\Management\Manuals\` 내 마스터파일인덱스(`INDEX.md`)로 현재 파일을 확인한다. 파일명·버전 하드코딩 금지.
 
 ## 핵심 규칙
 
